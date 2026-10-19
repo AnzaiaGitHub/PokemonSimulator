@@ -25,4 +25,13 @@ export const MAIN_LAYOUT_ROUTES: Routes = [
     loadComponent: () =>
       import('../../../features/battles/pages/battle-arena/battle-arena').then((m) => m.BattleArena),
   },
+  {
+    path: 'not-found',
+    loadComponent: () =>
+      import('../../pages/not-found/not-found').then((m) => m.NotFound),
+  },
+  {
+    path: '**',
+    redirectTo: 'not-found',
+  },
 ];
