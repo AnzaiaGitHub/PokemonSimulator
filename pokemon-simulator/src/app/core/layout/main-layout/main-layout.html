@@ -1,0 +1,73 @@
+<div class="flex min-h-screen bg-slate-950 text-slate-100">
+  <aside
+    class="sticky top-0 hidden h-screen w-64 shrink-0 flex-col border-r border-slate-800 bg-slate-900/80 px-4 py-6 md:flex"
+  >
+    <a
+      routerLink="/pokedex"
+      class="flex items-center gap-3 rounded-xl px-2 py-1 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-500"
+    >
+      <span class="flex h-10 w-10 items-center justify-center rounded-full bg-red-500 ring-4 ring-red-500/20">
+        <span class="h-4 w-4 rounded-full border-4 border-white bg-slate-900"></span>
+      </span>
+      <span class="flex flex-col">
+        <span class="text-sm font-black uppercase tracking-widest text-white">Pokémon</span>
+        <span class="text-xs font-medium uppercase tracking-[0.3em] text-slate-400">Simulator</span>
+      </span>
+    </a>
+
+    <nav aria-label="Main navigation" class="mt-10 flex flex-1 flex-col gap-2">
+      @for (item of navItems; track item.path) {
+        <a
+          [routerLink]="item.path"
+          routerLinkActive="bg-red-500/10 text-white ring-1 ring-inset ring-red-500/40"
+          ariaCurrentWhenActive="page"
+          class="group flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-semibold text-slate-400 transition hover:bg-slate-800 hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-500"
+        >
+          <svg
+            class="h-5 w-5 shrink-0"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.8"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+          >
+            <path [attr.d]="item.icon" />
+          </svg>
+          <span>{{ item.label }}</span>
+        </a>
+      }
+    </nav>
+
+    <p class="px-2 text-xs text-slate-500">Gotta catch 'em all.</p>
+  </aside>
+
+  <div class="flex min-h-screen flex-1 flex-col">
+    <header class="sticky top-0 z-10 border-b border-slate-800 bg-slate-950/90 backdrop-blur md:hidden">
+      <div class="flex items-center gap-3 px-4 py-3">
+        <span class="flex h-8 w-8 items-center justify-center rounded-full bg-red-500 ring-4 ring-red-500/20">
+          <span class="h-3 w-3 rounded-full border-4 border-white bg-slate-900"></span>
+        </span>
+        <span class="text-sm font-black uppercase tracking-widest text-white">Pokémon Simulator</span>
+      </div>
+
+      <nav aria-label="Main navigation" class="flex gap-2 overflow-x-auto px-3 pb-3">
+        @for (item of navItems; track item.path) {
+          <a
+            [routerLink]="item.path"
+            routerLinkActive="bg-red-500/10 text-white ring-1 ring-inset ring-red-500/40"
+            ariaCurrentWhenActive="page"
+            class="shrink-0 rounded-lg px-3 py-2 text-sm font-semibold text-slate-400 transition hover:bg-slate-800 hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-500"
+          >
+            {{ item.label }}
+          </a>
+        }
+      </nav>
+    </header>
+
+    <main class="flex-1 px-4 py-6 sm:px-6 lg:px-10 lg:py-10">
+      <router-outlet></router-outlet>
+    </main>
+  </div>
+</div>
