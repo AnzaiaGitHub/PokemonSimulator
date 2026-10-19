@@ -1,9 +1,5 @@
 import { NamedApiResource, TypeResponse } from '../models/pokeapi';
-import {
-  PokemonType,
-  PokemonTypeName,
-  toPokemonTypeName,
-} from '../models/pokemon-type.model';
+import { PokemonType, PokemonTypeName, toPokemonTypeName } from '../models/pokemon-type.model';
 
 export function mapTypeResponse(response: TypeResponse): PokemonType {
   return {
