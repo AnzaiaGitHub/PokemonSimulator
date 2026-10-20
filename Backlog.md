@@ -246,44 +246,44 @@ Sin esto, las imágenes no se verían sin conexión.
 **Objetivo**: motor puro, determinista con semilla y fácil de testear; la UI es una capa encima.
 
 ### US-060 🟡 Cálculo de stats (3 pts)
-- [ ] Nivel fijo 50, sin IVs/EVs/naturaleza.
-- [ ] HP = `floor(2·base·L/100) + L + 10`; otros stats = `floor(2·base·L/100) + 5`.
-- [ ] Función pura con tests.
+- [x] Nivel fijo 50, sin IVs/EVs/naturaleza.
+- [x] HP = `floor(2·base·L/100) + L + 10`; otros stats = `floor(2·base·L/100) + 5`.
+- [x] Función pura con tests.
 
 ### US-061 🟡 Fórmula de daño simplificada (5 pts)
-- [ ] Daño base según nivel, poder, ataque/defensa (físico o especial según la clase del movimiento).
-- [ ] Modificadores: efectividad de tipos (×0, ×0.25, ×0.5, ×1, ×2, ×4), STAB ×1.5, crítico ×1.5 (probabilidad 1/24) y variación aleatoria 0.85–1.0.
-- [ ] Los movimientos de estado se ignoran en esta versión.
-- [ ] Cada resultado devuelve el desglose (qué modificadores se aplicaron) para mostrarlo en la UI.
+- [x] Daño base según nivel, poder, ataque/defensa (físico o especial según la clase del movimiento).
+- [x] Modificadores: efectividad de tipos (×0, ×0.25, ×0.5, ×1, ×2, ×4), STAB ×1.5, crítico ×1.5 (probabilidad 1/24) y variación aleatoria 0.85–1.0.
+- [x] Los movimientos de estado se ignoran en esta versión.
+- [x] Cada resultado devuelve el desglose (qué modificadores se aplicaron) para mostrarlo en la UI.
 
 ### US-062 🟡 Entorno de batalla (3 pts)
-- [ ] Clima seleccionable: despejado, sol, lluvia.
-- [ ] Sol: Fuego ×1.5 y Agua ×0.5. Lluvia: Agua ×1.5 y Fuego ×0.5.
-- [ ] El modelo permite añadir más climas sin cambiar el motor.
+- [x] Clima seleccionable: despejado, sol, lluvia.
+- [x] Sol: Fuego ×1.5 y Agua ×0.5. Lluvia: Agua ×1.5 y Fuego ×0.5.
+- [x] El modelo permite añadir más climas sin cambiar el motor.
 
 ### US-063 🟡 Resolución de turnos (5 pts)
-- [ ] Orden por velocidad (empate resuelto con RNG).
-- [ ] Verificación de precisión del movimiento.
-- [ ] Fin de batalla cuando un Pokémon llega a 0 HP.
-- [ ] RNG con semilla: misma semilla ⇒ mismo resultado.
+- [x] Orden por velocidad (empate resuelto con RNG).
+- [x] Verificación de precisión del movimiento.
+- [x] Fin de batalla cuando un Pokémon llega a 0 HP.
+- [x] RNG con semilla: misma semilla ⇒ mismo resultado.
 
 ### US-064 🟡 UI de configuración (3 pts)
-- [ ] Elegir dos Pokémon (de mi equipo o de la Pokédex), con sus movimientos y el clima.
-- [ ] Validación: ambos con al menos un movimiento de ataque.
+- [x] Elegir dos Pokémon (de mi equipo o de la Pokédex), con sus movimientos y el clima.
+- [x] Validación: ambos con al menos un movimiento de ataque.
 
 ### US-065 🟡 Desarrollo visual de la batalla (5 pts)
-- [ ] Barras de HP y registro de turnos ("Pikachu usó Rayo. ¡Es muy eficaz!").
-- [ ] Botones "Siguiente turno" y "Simular completa".
-- [ ] El registro muestra críticos y efectividad.
+- [x] Barras de HP y registro de turnos ("Pikachu usó Rayo. ¡Es muy eficaz!").
+- [x] Botones "Siguiente turno" y "Simular completa".
+- [x] El registro muestra críticos y efectividad.
 
 ### US-066 🟡 Análisis de eficiencia (5 pts)
-- [ ] Tabla de matchup: daño esperado de cada movimiento contra el rival (sin aleatoriedad) y su efectividad.
-- [ ] Simulación de N batallas (por defecto 100) con porcentaje de victorias y turnos promedio para ganar.
-- [ ] Ejecutada en un `Web Worker` o por lotes para no bloquear la interfaz.
+- [x] Tabla de matchup: daño esperado de cada movimiento contra el rival (sin aleatoriedad) y su efectividad.
+- [x] Simulación de N batallas (por defecto 100) con porcentaje de victorias y turnos promedio para ganar.
+- [x] Ejecutada en un `Web Worker` o por lotes para no bloquear la interfaz.
 
 ### US-067 🟡 Tests del motor (3 pts)
-- [ ] Casos conocidos: tipo inmune (×0), doble debilidad (×4), STAB, crítico, clima.
-- [ ] Test de determinismo con la misma semilla.
+- [x] Casos conocidos: tipo inmune (×0), doble debilidad (×4), STAB, crítico, clima.
+- [x] Test de determinismo con la misma semilla.
 
 ---
 

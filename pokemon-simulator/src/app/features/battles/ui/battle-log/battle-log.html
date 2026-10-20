@@ -1,0 +1,70 @@
+<section
+  class="rounded-2xl border border-slate-800 bg-slate-900/60 p-5"
+  aria-labelledby="battle-log-title"
+>
+  <h2 id="battle-log-title" class="text-sm font-semibold uppercase tracking-[0.3em] text-slate-400">
+    Battle log
+  </h2>
+
+  <ol
+    class="mt-3 max-h-80 space-y-2 overflow-y-auto pr-1"
+    role="log"
+    aria-live="polite"
+    aria-relevant="additions"
+  >
+    @for (entry of entries(); track $index) {
+      <li
+        class="rounded-xl border border-slate-800 bg-slate-950/50 px-3 py-2"
+        [class.opacity-80]="entry.missed"
+      >
+        <div class="flex items-start justify-between gap-3">
+          <p class="text-sm font-medium text-slate-200">{{ describe(entry) }}</p>
+          <span
+            class="shrink-0 rounded-full bg-slate-800 px-2 py-0.5 text-[10px] font-semibold text-slate-400"
+          >
+            Turn {{ entry.turn }}
+          </span>
+        </div>
+
+        <div class="mt-1.5 flex flex-wrap items-center gap-1.5 text-[11px] font-semibold">
+          <span class="text-slate-400">{{ moveName(entry) }}</span>
+
+          @if (!entry.missed) {
+            <span class="text-slate-300">−{{ entry.damage }} HP</span>
+            <span
+              class="inline-flex items-center rounded-full px-2 py-0.5 ring-1 ring-inset"
+              [class]="effectivenessClasses(entry.typeMultiplier)"
+            >
+              {{ effectiveness(entry) }}
+            </span>
+            @if (entry.critical) {
+              <span
+                class="rounded-full bg-red-500/15 px-2 py-0.5 text-red-300 ring-1 ring-inset ring-red-500/30"
+              >
+                Critical
+              </span>
+            }
+            @if (entry.stab) {
+              <span
+                class="rounded-full bg-sky-500/15 px-2 py-0.5 text-sky-300 ring-1 ring-inset ring-sky-500/30"
+              >
+                STAB
+              </span>
+            }
+            @if (entry.weatherMultiplier !== 1) {
+              <span
+                class="rounded-full bg-violet-500/15 px-2 py-0.5 text-violet-300 ring-1 ring-inset ring-violet-500/30"
+              >
+                Weather {{ entry.weatherMultiplier }}×
+              </span>
+            }
+          } @else {
+            <span class="text-amber-300">Missed</span>
+          }
+        </div>
+      </li>
+    } @empty {
+      <li class="px-3 py-4 text-sm text-slate-500">{{ emptyMessage() }}</li>
+    }
+  </ol>
+</section>

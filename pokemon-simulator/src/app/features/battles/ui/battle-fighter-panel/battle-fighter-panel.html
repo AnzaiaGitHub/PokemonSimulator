@@ -1,0 +1,72 @@
+<article
+  class="relative rounded-2xl border border-slate-800 bg-slate-900/60 p-5"
+  [class.border-emerald-500/50]="isWinner()"
+  [class.opacity-70]="isFainted()"
+>
+  <header class="flex items-start justify-between gap-3">
+    <div>
+      <p class="text-xs font-semibold uppercase tracking-[0.3em] text-slate-400">
+        {{ label() }}
+      </p>
+      <h2 class="mt-1 text-xl font-black capitalize tracking-tight text-white">{{ name() }}</h2>
+      <div class="mt-2 flex flex-wrap gap-1">
+        @for (type of fighter().pokemon.types; track type) {
+          <app-pokemon-type-badge [type]="type" size="sm" />
+        }
+      </div>
+    </div>
+
+    <span class="rounded-full bg-slate-800 px-3 py-1 text-xs font-semibold text-slate-300">
+      Lv. 50
+    </span>
+  </header>
+
+  <div class="mt-4 flex items-center justify-center">
+    <img
+      [src]="imageSrc()"
+      width="160"
+      height="160"
+      [alt]="'Artwork of ' + name()"
+      (error)="onImageError()"
+      class="h-40 w-40 object-contain"
+    />
+  </div>
+
+  @if (isWinner()) {
+    <p class="mt-2 text-center text-sm font-bold text-emerald-300">Winner!</p>
+  } @else if (isFainted()) {
+    <p class="mt-2 text-center text-sm font-bold text-red-300">Fainted</p>
+  }
+
+  <div class="mt-4">
+    <div class="flex items-center justify-between text-xs font-semibold text-slate-300">
+      <span>HP</span>
+      <span>{{ fighter().currentHp }} / {{ fighter().maxHp }}</span>
+    </div>
+    <div
+      class="mt-1.5 h-2.5 w-full overflow-hidden rounded-full bg-slate-800"
+      role="progressbar"
+      [attr.aria-label]="name() + ' HP'"
+      [attr.aria-valuemin]="0"
+      [attr.aria-valuemax]="fighter().maxHp"
+      [attr.aria-valuenow]="fighter().currentHp"
+    >
+      <div [class]="hpBarClasses()" [style.width.%]="hpPercent()"></div>
+    </div>
+  </div>
+
+  <dl class="mt-4 grid grid-cols-3 gap-2 text-center">
+    <div class="rounded-lg border border-slate-800 bg-slate-950/50 px-2 py-1.5">
+      <dt class="text-[10px] font-semibold uppercase text-slate-500">Atk</dt>
+      <dd class="text-sm font-bold text-slate-200">{{ fighter().stats.attack }}</dd>
+    </div>
+    <div class="rounded-lg border border-slate-800 bg-slate-950/50 px-2 py-1.5">
+      <dt class="text-[10px] font-semibold uppercase text-slate-500">SpA</dt>
+      <dd class="text-sm font-bold text-slate-200">{{ fighter().stats.specialAttack }}</dd>
+    </div>
+    <div class="rounded-lg border border-slate-800 bg-slate-950/50 px-2 py-1.5">
+      <dt class="text-[10px] font-semibold uppercase text-slate-500">Spe</dt>
+      <dd class="text-sm font-bold text-slate-200">{{ fighter().stats.speed }}</dd>
+    </div>
+  </dl>
+</article>

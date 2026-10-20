@@ -1,1 +1,166 @@
-<p>battle-arena works!</p>
+<section class="mx-auto max-w-6xl">
+  <header class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+    <div>
+      <p class="text-xs font-semibold uppercase tracking-[0.3em] text-red-400">Battle</p>
+      <h1 class="mt-2 text-3xl font-black tracking-tight text-white sm:text-4xl">
+        Battle Simulator
+      </h1>
+      <p class="mt-2 max-w-2xl text-sm text-slate-400">
+        Pit two Pokémon against each other with simplified level 50 stats. Choose fighters from your
+        team or the Pokédex, set the weather and run a deterministic seeded battle.
+      </p>
+    </div>
+  </header>
+
+  @if (battle(); as battle) {
+    <div class="mt-6 rounded-2xl border border-slate-800 bg-slate-900/60 p-5">
+      <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div class="flex flex-wrap items-center gap-2 text-xs font-semibold text-slate-300">
+          <span class="rounded-full bg-slate-800 px-3 py-1">Turn {{ battle.turn }}</span>
+          <span class="rounded-full bg-slate-800 px-3 py-1">{{ currentWeather().label }}</span>
+          <span class="rounded-full bg-slate-800 px-3 py-1">Seed {{ seed() }}</span>
+        </div>
+
+        <div class="flex flex-wrap items-center gap-2">
+          <button
+            type="button"
+            (click)="nextTurn()"
+            [disabled]="isBattleOver()"
+            class="rounded-xl bg-red-500 px-4 py-2 text-sm font-semibold text-white transition hover:bg-red-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-500 disabled:cursor-not-allowed disabled:opacity-40"
+          >
+            Next turn
+          </button>
+          <button
+            type="button"
+            (click)="simulateFullBattle()"
+            [disabled]="isBattleOver()"
+            class="rounded-xl border border-slate-700 px-4 py-2 text-sm font-semibold text-slate-200 transition hover:bg-slate-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-500 disabled:cursor-not-allowed disabled:opacity-40"
+          >
+            Simulate complete
+          </button>
+          <button
+            type="button"
+            (click)="resetBattle()"
+            class="rounded-xl border border-slate-700 px-4 py-2 text-sm font-semibold text-slate-200 transition hover:bg-slate-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-500"
+          >
+            New battle
+          </button>
+        </div>
+      </div>
+
+      @if (battle.winner) {
+        <p
+          class="mt-4 rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-4 py-3 text-sm font-semibold text-emerald-200"
+          role="status"
+          aria-live="polite"
+        >
+          @if (battle.winner === 'player') {
+            Player 1 ({{ battle.player.pokemon.name }}) wins!
+          } @else {
+            Player 2 ({{ battle.opponent.pokemon.name }}) wins!
+          }
+        </p>
+      } @else if (isBattleOver()) {
+        <p
+          class="mt-4 rounded-xl border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-sm font-semibold text-amber-200"
+          role="status"
+          aria-live="polite"
+        >
+          Draw: the battle reached the 100 turn limit.
+        </p>
+      }
+    </div>
+
+    <div class="mt-4 grid gap-4 lg:grid-cols-2">
+      <app-battle-fighter-panel
+        [fighter]="battle.player"
+        label="Player 1"
+        [isWinner]="battle.winner === 'player'"
+      />
+      <app-battle-fighter-panel
+        [fighter]="battle.opponent"
+        label="Player 2"
+        [isWinner]="battle.winner === 'opponent'"
+      />
+    </div>
+
+    <app-battle-log class="mt-4 block" [entries]="battle.log" />
+  } @else {
+    <div class="mt-6 grid gap-4 sm:grid-cols-2">
+      <div class="rounded-2xl border border-slate-800 bg-slate-900/60 p-5">
+        <label
+          for="battle-weather"
+          class="text-xs font-semibold uppercase tracking-wide text-slate-400"
+        >
+          Weather
+        </label>
+        <select
+          id="battle-weather"
+          [value]="weather()"
+          (change)="onWeatherChange($event)"
+          class="mt-2 w-full rounded-xl border border-slate-700 bg-slate-950/70 px-3 py-2.5 text-sm text-white focus:border-red-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500/40"
+        >
+          @for (option of weatherOptions; track option.id) {
+            <option [value]="option.id">{{ option.label }}</option>
+          }
+        </select>
+        <p class="mt-2 text-xs text-slate-400">{{ currentWeather().description }}</p>
+      </div>
+
+      <div class="rounded-2xl border border-slate-800 bg-slate-900/60 p-5">
+        <label
+          for="battle-seed"
+          class="text-xs font-semibold uppercase tracking-wide text-slate-400"
+        >
+          Random seed
+        </label>
+        <input
+          id="battle-seed"
+          type="number"
+          min="0"
+          step="1"
+          [value]="seed()"
+          (change)="onSeedChange($event)"
+          class="mt-2 w-full rounded-xl border border-slate-700 bg-slate-950/70 px-3 py-2.5 text-sm text-white focus:border-red-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500/40"
+        />
+        <p class="mt-2 text-xs text-slate-400">
+          The same seed and fighters always produce the same battle.
+        </p>
+      </div>
+    </div>
+
+    <div class="mt-4 grid gap-4 lg:grid-cols-2">
+      <app-battle-fighter-config side="player" />
+      <app-battle-fighter-config side="opponent" />
+    </div>
+
+    <div
+      class="mt-4 flex flex-col gap-3 rounded-2xl border border-slate-800 bg-slate-900/60 p-5 sm:flex-row sm:items-center sm:justify-between"
+    >
+      <div role="status" aria-live="polite">
+        @if (validationError(); as error) {
+          <p class="text-sm font-medium text-amber-300">{{ error }}</p>
+        } @else {
+          <p class="text-sm font-medium text-emerald-300">Both fighters are ready.</p>
+        }
+      </div>
+
+      <button
+        type="button"
+        [disabled]="!canStart()"
+        (click)="startBattle()"
+        class="rounded-xl bg-red-500 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-red-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-500 disabled:cursor-not-allowed disabled:opacity-40"
+      >
+        Start battle
+      </button>
+    </div>
+
+    <div class="mt-8 lg:mt-12">
+      @defer (on viewport) {
+        <app-battle-analysis />
+      } @placeholder {
+        <div class="h-48 animate-pulse rounded-2xl bg-slate-900/60" aria-hidden="true"></div>
+      }
+    </div>
+  }
+</section>

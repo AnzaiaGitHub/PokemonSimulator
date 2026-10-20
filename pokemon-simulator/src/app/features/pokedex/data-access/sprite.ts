@@ -14,8 +14,11 @@ export class SpriteService {
   private readonly connectivity = inject(Connectivity);
   private readonly objectUrls = new Map<number, string>();
   private readonly pending = new Map<number, Promise<string>>();
+  private readonly references = new Map<number, number>();
 
   load(pokemonId: number, remoteUrl: string): Promise<string> {
+    this.references.set(pokemonId, (this.references.get(pokemonId) ?? 0) + 1);
+
     const cachedUrl = this.objectUrls.get(pokemonId);
 
     if (cachedUrl) {
@@ -38,6 +41,15 @@ export class SpriteService {
   }
 
   release(pokemonId: number): void {
+    const references = (this.references.get(pokemonId) ?? 1) - 1;
+
+    if (references > 0) {
+      this.references.set(pokemonId, references);
+      return;
+    }
+
+    this.references.delete(pokemonId);
+
     const objectUrl = this.objectUrls.get(pokemonId);
 
     if (!objectUrl) {

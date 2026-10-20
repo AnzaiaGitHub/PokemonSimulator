@@ -1,0 +1,108 @@
+<section
+  class="rounded-2xl border border-slate-800 bg-slate-900/60 p-5"
+  aria-labelledby="battle-analysis-title"
+>
+  <header class="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+    <div>
+      <p class="text-xs font-semibold uppercase tracking-[0.3em] text-red-400">Efficiency</p>
+      <h2 id="battle-analysis-title" class="mt-1 text-xl font-bold tracking-tight text-white">
+        Matchup analysis
+      </h2>
+      <p class="mt-1 max-w-2xl text-xs text-slate-400">
+        Expected damage ignores randomness. Simulations use the selected seed and run in small
+        batches so the page stays responsive.
+      </p>
+    </div>
+
+    <div class="flex shrink-0 items-center gap-2">
+      @if (isRunning()) {
+        <button
+          type="button"
+          (click)="cancel()"
+          class="rounded-xl border border-slate-700 px-4 py-2 text-sm font-semibold text-slate-200 transition hover:bg-slate-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-500"
+        >
+          Cancel
+        </button>
+      } @else {
+        <button
+          type="button"
+          [disabled]="!canAnalyze()"
+          (click)="simulate()"
+          class="rounded-xl bg-red-500 px-4 py-2 text-sm font-semibold text-white transition hover:bg-red-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-500 disabled:cursor-not-allowed disabled:opacity-40"
+        >
+          Simulate {{ battles }} battles
+        </button>
+      }
+    </div>
+  </header>
+
+  <div class="mt-4 grid gap-4 lg:grid-cols-2">
+    <app-battle-matchup-table
+      [title]="playerName() + ' attacks'"
+      [defenderName]="opponentName()"
+      [entries]="playerMatchup()"
+    />
+    <app-battle-matchup-table
+      [title]="opponentName() + ' attacks'"
+      [defenderName]="playerName()"
+      [entries]="opponentMatchup()"
+    />
+  </div>
+
+  @if (isRunning()) {
+    <div class="mt-4" role="status" aria-live="polite">
+      <div class="flex items-center justify-between text-xs font-medium text-slate-400">
+        <span>Simulating battles…</span>
+        <span>{{ completed() }} / {{ total() }} ({{ percent() }}%)</span>
+      </div>
+      <progress
+        class="mt-2 h-2 w-full overflow-hidden rounded-full accent-red-500"
+        [value]="completed()"
+        [max]="total() || 1"
+        aria-label="Simulated battles"
+      ></progress>
+    </div>
+  }
+
+  @if (status() === 'cancelled') {
+    <p class="mt-3 text-xs font-medium text-amber-300" role="status">
+      Simulation cancelled. Partial results are shown below.
+    </p>
+  }
+
+  @if (error(); as error) {
+    <p class="mt-3 text-xs font-medium text-red-300" role="alert">{{ error }}</p>
+  }
+
+  @if (result(); as result) {
+    <div class="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
+      <div class="rounded-xl border border-slate-800 bg-slate-950/50 p-3 text-center">
+        <p class="text-[10px] font-semibold uppercase tracking-wide text-slate-500">Win rate</p>
+        <p class="mt-1 text-xl font-black text-emerald-300">{{ winRate() }}</p>
+      </div>
+      <div class="rounded-xl border border-slate-800 bg-slate-950/50 p-3 text-center">
+        <p class="text-[10px] font-semibold uppercase tracking-wide text-slate-500">Wins</p>
+        <p class="mt-1 text-xl font-black text-white">{{ result.wins }}</p>
+      </div>
+      <div class="rounded-xl border border-slate-800 bg-slate-950/50 p-3 text-center">
+        <p class="text-[10px] font-semibold uppercase tracking-wide text-slate-500">Losses</p>
+        <p class="mt-1 text-xl font-black text-white">{{ result.losses }}</p>
+      </div>
+      <div class="rounded-xl border border-slate-800 bg-slate-950/50 p-3 text-center">
+        <p class="text-[10px] font-semibold uppercase tracking-wide text-slate-500">Avg. turns</p>
+        <p class="mt-1 text-xl font-black text-white">{{ averageTurns() }}</p>
+      </div>
+      <div class="rounded-xl border border-slate-800 bg-slate-950/50 p-3 text-center">
+        <p class="text-[10px] font-semibold uppercase tracking-wide text-slate-500">Turns to win</p>
+        <p class="mt-1 text-xl font-black text-white">{{ averageTurnsToWin() }}</p>
+      </div>
+    </div>
+
+    @if (result.draws > 0) {
+      <p class="mt-2 text-xs text-slate-400">
+        {{ result.draws }} battle{{ result.draws === 1 ? '' : 's' }} reached the turn limit without
+        a knockout.
+      </p>
+    }
+  }
+</section>

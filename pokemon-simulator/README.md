@@ -16,8 +16,13 @@ data is cached in IndexedDB so the Pokédex keeps working without a connection.
   current team with progress, failure reporting and cancellation.
 - Settings page to inspect storage usage, request persistent storage and clear cached data while
   keeping teams and trainers.
-- `OnPush` everywhere, `track` in every `@for` and `@defer` for the team summary, move selector and
-  Pokémon stats.
+- 1 vs 1 battle simulator: pick fighters from the team or Pokédex, choose their moves and the
+  weather, then advance turn by turn or simulate the whole battle. HP bars and the turn log show
+  damage, criticals and type effectiveness.
+- Matchup analysis with expected damage per move and a batch simulation of 100 battles (win rate
+  and average turns) that yields to the browser between batches.
+- `OnPush` everywhere, `track` in every `@for` and `@defer` for the team summary, move selector,
+  Pokémon stats and battle analysis.
 
 ## Development server
 
@@ -60,6 +65,26 @@ the `moves` store, reused offline and requested through the same concurrency-lim
 Pokémon's learnset comes from its cached detail, so the selector never needs the API to know which
 moves are available. Selected moves are saved with the team slot and restored on reload.
 
+## Battle simulator
+
+The battle engine lives in `features/battles/engine` and has no Angular dependencies. It uses a
+fixed level of 50 without IVs, EVs or natures:
+
+- HP = `floor(2 × base × level / 100) + level + 10`.
+- Other stats = `floor(2 × base × level / 100) + 5`.
+- Damage uses the simplified formula with type effectiveness (0, 0.25, 0.5, 1, 2 or 4), STAB
+  ×1.5, critical hits ×1.5 (1/24 chance), a random factor of 0.85–1 and the selected weather.
+- Weather is data-driven: clear, sun (Fire ×1.5, Water ×0.5) and rain (Water ×1.5, Fire ×0.5).
+- Status moves are ignored in this version.
+
+Turns are ordered by speed; ties are resolved by the seeded RNG. The same seed, fighters, moves and
+weather always produce the same battle. The UI reads the breakdown from the engine, so criticals,
+STAB and effectiveness shown in the log come from the same calculation used for damage.
+
+The efficiency section builds a matchup table using expected damage without randomness and can
+simulate 100 battles. Simulations run in batches of 10 with a yield to the browser between batches,
+so the interface stays responsive without a separate worker.
+
 ## Code quality
 
 ```bash
@@ -76,4 +101,5 @@ npm test
 ```
 
 They cover mappers, the HTTP queue, cache hit/miss, TTL/revalidation, offline errors, schema
-migrations, the Pokédex store, move loading/validators and the main views.
+migrations, the Pokédex store, move loading/validators, the main views and the battle engine
+(stats, type effectiveness, weather, criticals, determinism and simulation summaries).
