@@ -1,26 +1,9 @@
 import { MoveResponse } from '../models/pokeapi';
 import { mapMoveResponse } from './move.mapper';
+import { createMoveResponse } from './testing/pokeapi-fixtures';
 
 const FETCHED_AT = 1_700_000_000_000;
-
-const MOVE_RESPONSE: MoveResponse = {
-  id: 85,
-  name: 'thunderbolt',
-  accuracy: 100,
-  effect_chance: 10,
-  pp: 15,
-  priority: 0,
-  power: 90,
-  type: { name: 'electric', url: '' },
-  damage_class: { name: 'special', url: '' },
-  target: { name: 'selected-pokemon', url: '' },
-  generation: { name: 'generation-i', url: '' },
-  effect_entries: [],
-  flavor_text_entries: [],
-  names: [],
-  stat_changes: [],
-  learned_by_pokemon: [],
-};
+const MOVE_RESPONSE: MoveResponse = createMoveResponse();
 
 describe('mapMoveResponse', () => {
   it('maps the move to the domain model', () => {

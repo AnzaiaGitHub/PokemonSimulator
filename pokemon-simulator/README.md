@@ -12,6 +12,18 @@ ng serve
 
 Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
 
+## API configuration
+
+The PokéAPI base URL is read from `.env` in the project root:
+
+```bash
+POKEAPI_URL=https://pokeapi.co/api/v2
+```
+
+`npm start`, `npm run build` and `npm test` run `scripts/generate-env.mjs`, which generates the git-ignored `src/environments/environment.local.ts`. If the variable is missing, `https://pokeapi.co/api/v2` is used.
+
+Downloaded data is cached in IndexedDB. Once cached, the app reads from the local database first.
+
 ## Code scaffolding
 
 Angular CLI includes powerful code scaffolding tools. To generate a new component, run:

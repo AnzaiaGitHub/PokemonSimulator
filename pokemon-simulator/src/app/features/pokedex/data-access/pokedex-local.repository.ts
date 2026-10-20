@@ -12,10 +12,13 @@ import { DataResult, PokedexRepository } from './pokedex.repository';
 
 export const POKEDEX_SOURCE = new InjectionToken<PokedexRepository>('PokedexSource');
 
+const CACHE_VERSION = 1;
+
 @Injectable()
 export class LocalPokedexRepository implements PokedexRepository {
   private readonly localDb = inject(LocalDb);
   private readonly source = inject(POKEDEX_SOURCE);
+  private cacheVersionReady: Promise<void> | null = null;
 
   getPokemonIndex(): Observable<DataResult<readonly PokemonIndexEntry[]>> {
     return defer(() => this.loadPokemonIndex());
@@ -33,7 +36,25 @@ export class LocalPokedexRepository implements PokedexRepository {
     return defer(() => this.loadType(name));
   }
 
+  private ensureCacheVersion(): Promise<void> {
+    this.cacheVersionReady ??= this.resetOutdatedCache();
+
+    return this.cacheVersionReady;
+  }
+
+  private async resetOutdatedCache(): Promise<void> {
+    const version = await this.localDb.getMeta<number>('cacheVersion');
+
+    if (version === CACHE_VERSION) {
+      return;
+    }
+
+    await this.localDb.clearCache();
+    await this.localDb.setMeta('cacheVersion', CACHE_VERSION);
+  }
+
   private async loadPokemonIndex(): Promise<DataResult<readonly PokemonIndexEntry[]>> {
+    await this.ensureCacheVersion();
     const cached = await this.localDb.getPokemonIndex();
 
     if (cached.length > 0) {
@@ -47,6 +68,7 @@ export class LocalPokedexRepository implements PokedexRepository {
   }
 
   private async loadPokemon(nameOrId: string | number): Promise<DataResult<Pokemon>> {
+    await this.ensureCacheVersion();
     const key = String(nameOrId).trim().toLowerCase();
     const byName = await this.localDb.getPokemonByName(key);
 
@@ -71,6 +93,7 @@ export class LocalPokedexRepository implements PokedexRepository {
   }
 
   private async loadMove(name: string): Promise<DataResult<Move>> {
+    await this.ensureCacheVersion();
     const key = name.trim().toLowerCase();
     const cached = await this.localDb.getMove(key);
 
@@ -85,6 +108,7 @@ export class LocalPokedexRepository implements PokedexRepository {
   }
 
   private async loadType(name: string): Promise<DataResult<PokemonType>> {
+    await this.ensureCacheVersion();
     const key = name.trim().toLowerCase();
 
     if (isPokemonTypeName(key)) {

@@ -4,9 +4,10 @@ import { NotFoundError } from '../../../core/errors/data-error';
 import { LocalDb } from '../../../core/database';
 import { APP_DATABASE, LOCAL_DB_NAME } from '../../../core/database/local-db.provider';
 import { AppDatabase } from '../../../core/database/local-db.schema';
-import { providePokedexLocal } from './pokedex-local.config';
 import { POKEDEX_FIXTURES } from './mock/pokedex-fixtures';
+import { LocalPokedexRepository, POKEDEX_SOURCE } from './pokedex-local.repository';
 import { POKEDEX_REPOSITORY, PokedexRepository } from './pokedex.repository';
+import { FakePokedexRepository } from './testing/pokedex-fake.repository';
 
 let database: AppDatabase | null = null;
 let dbCounter = 0;
@@ -15,7 +16,11 @@ function setup(): { repository: PokedexRepository; localDb: LocalDb; database: A
   const name = `pokemon-simulator-repository-test-${++dbCounter}`;
 
   TestBed.configureTestingModule({
-    providers: [{ provide: LOCAL_DB_NAME, useValue: name }, providePokedexLocal({ delayMs: 0 })],
+    providers: [
+      { provide: LOCAL_DB_NAME, useValue: name },
+      { provide: POKEDEX_SOURCE, useClass: FakePokedexRepository },
+      { provide: POKEDEX_REPOSITORY, useClass: LocalPokedexRepository },
+    ],
   });
 
   const repository = TestBed.inject(POKEDEX_REPOSITORY);
@@ -46,6 +51,23 @@ describe('LocalPokedexRepository', () => {
     expect(second.source).toBe('cache');
     expect(second.data).toHaveLength(POKEDEX_FIXTURES.length);
     expect(localDb.status()).toBe('indexeddb');
+  });
+
+  it('clears cached data created by an older data source', async () => {
+    const { repository, localDb } = setup();
+
+    await localDb.putPokemonIndex({ id: 999, name: 'old-cache-entry' });
+    await localDb.setMeta('cacheVersion', 0);
+
+    const result = await firstValueFrom(repository.getPokemonIndex());
+
+    expect(result.source).toBe('network');
+    expect(result.data).toHaveLength(POKEDEX_FIXTURES.length);
+    expect(await localDb.getMeta('cacheVersion')).toBe(1);
+    expect(await localDb.getPokemonIndex()).not.toContainEqual({
+      id: 999,
+      name: 'old-cache-entry',
+    });
   });
 
   it('caches Pokémon details by name and reads them by id', async () => {
