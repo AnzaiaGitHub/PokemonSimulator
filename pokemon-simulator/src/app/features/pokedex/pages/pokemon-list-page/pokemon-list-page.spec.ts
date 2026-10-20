@@ -1,6 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import { POKEDEX_REPOSITORY } from '../../data-access/pokedex.repository';
+import { SpriteService } from '../../data-access/sprite';
 import { FakePokedexRepository } from '../../data-access/testing/pokedex-fake.repository';
 import { PokemonListPage } from './pokemon-list-page';
 
@@ -9,7 +10,14 @@ async function createFixture(
 ): Promise<ComponentFixture<PokemonListPage>> {
   await TestBed.configureTestingModule({
     imports: [PokemonListPage],
-    providers: [{ provide: POKEDEX_REPOSITORY, useValue: repository }, provideRouter([])],
+    providers: [
+      { provide: POKEDEX_REPOSITORY, useValue: repository },
+      {
+        provide: SpriteService,
+        useValue: { load: () => Promise.resolve('blob:sprite'), release: () => undefined },
+      },
+      provideRouter([]),
+    ],
   }).compileComponents();
 
   const fixture = TestBed.createComponent(PokemonListPage);
@@ -33,6 +41,6 @@ describe('PokemonListPage', () => {
     const compiled = fixture.nativeElement as HTMLElement;
 
     expect(compiled.textContent).toContain('No Pokémon match your search.');
-    expect(compiled.textContent).toContain('Clear search');
+    expect(compiled.textContent).toContain('Clear filters');
   });
 });

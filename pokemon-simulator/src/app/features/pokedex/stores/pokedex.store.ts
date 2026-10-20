@@ -1,9 +1,11 @@
 import { computed, inject, Injectable, signal } from '@angular/core';
 import { Subscription } from 'rxjs';
-import { PokemonIndexEntry } from '../../../core/models';
+import { POKEMON_TYPE_NAMES, PokemonIndexEntry, PokemonTypeName } from '../../../core/models';
 import { DataSource, POKEDEX_REPOSITORY } from '../data-access/pokedex.repository';
+import { PokemonTypeCache } from '../data-access/pokemon-type-cache';
 
 export type PokedexStatus = 'idle' | 'loading' | 'ready' | 'error';
+export type TypeFilterStatus = 'idle' | 'loading' | 'ready' | 'error';
 
 export const POKEDEX_PAGE_SIZE = 20;
 
@@ -12,7 +14,9 @@ export const POKEDEX_PAGE_SIZE = 20;
 })
 export class PokedexStore {
   private readonly repository = inject(POKEDEX_REPOSITORY);
+  private readonly typeCache = inject(PokemonTypeCache);
   private loadSubscription: Subscription | null = null;
+  private typeSubscription: Subscription | null = null;
 
   private readonly _status = signal<PokedexStatus>('idle');
   private readonly _error = signal<string | null>(null);
@@ -20,6 +24,10 @@ export class PokedexStore {
   private readonly _dataSource = signal<DataSource | null>(null);
   private readonly _query = signal('');
   private readonly _page = signal(1);
+  private readonly _selectedType = signal<PokemonTypeName | null>(null);
+  private readonly _typePokemon = signal<ReadonlySet<string> | null>(null);
+  private readonly _typeStatus = signal<TypeFilterStatus>('idle');
+  private readonly _typeError = signal<string | null>(null);
 
   readonly status = this._status.asReadonly();
   readonly error = this._error.asReadonly();
@@ -27,17 +35,25 @@ export class PokedexStore {
   readonly dataSource = this._dataSource.asReadonly();
   readonly query = this._query.asReadonly();
   readonly page = this._page.asReadonly();
+  readonly selectedType = this._selectedType.asReadonly();
+  readonly typeStatus = this._typeStatus.asReadonly();
+  readonly typeError = this._typeError.asReadonly();
+  readonly availableTypes = POKEMON_TYPE_NAMES;
 
   readonly normalizedQuery = computed(() => (this._query() || '').trim().toLowerCase());
 
   readonly filteredPokemon = computed(() => {
     const query = this.normalizedQuery();
+    const typePokemon = this._typePokemon();
+    const filtered = typePokemon
+      ? this._index().filter((pokemon) => typePokemon.has(pokemon.name))
+      : this._index();
 
     if (!query || query == '') {
-      return this._index();
+      return filtered;
     }
 
-    return this._index().filter((pokemon) => pokemon.name.toLowerCase().includes(query));
+    return filtered.filter((pokemon) => pokemon.name.toLowerCase().includes(query));
   });
 
   readonly totalResults = computed(() => this.filteredPokemon().length);
@@ -55,7 +71,10 @@ export class PokedexStore {
   });
 
   readonly isLoading = computed(() => this._status() === 'loading');
-  readonly isEmpty = computed(() => this._status() === 'ready' && this.totalResults() === 0);
+  readonly isEmpty = computed(
+    () =>
+      this._status() === 'ready' && this._typeStatus() !== 'loading' && this.totalResults() === 0,
+  );
   readonly hasResults = computed(() => this.totalResults() > 0);
   readonly canGoPrevious = computed(() => this.currentPage() > 1);
   readonly canGoNext = computed(() => this.currentPage() < this.totalPages());
@@ -71,6 +90,7 @@ export class PokedexStore {
         this._dataSource.set(source);
         this._page.set(1);
         this._status.set('ready');
+        this.typeCache.loadAll();
       },
       error: (error: unknown) => {
         this._error.set(toErrorMessage(error, 'Could not load the Pokédex.'));
@@ -90,6 +110,45 @@ export class PokedexStore {
 
   clearQuery(): void {
     this.setQuery('');
+  }
+
+  setType(type: PokemonTypeName | null): void {
+    this.typeSubscription?.unsubscribe();
+    this._selectedType.set(type);
+    this._typePokemon.set(null);
+    this._typeError.set(null);
+    this._page.set(1);
+
+    if (!type) {
+      this._typeStatus.set('idle');
+      return;
+    }
+
+    this._typeStatus.set('loading');
+
+    this.typeSubscription = this.repository.getType(type).subscribe({
+      next: ({ data }) => {
+        if (this._selectedType() !== type) {
+          return;
+        }
+
+        this._typePokemon.set(new Set(data.pokemon));
+        this._typeStatus.set('ready');
+      },
+      error: (error: unknown) => {
+        if (this._selectedType() !== type) {
+          return;
+        }
+
+        this._typeError.set(toErrorMessage(error, 'Could not filter by type.'));
+        this._typeStatus.set('error');
+      },
+    });
+  }
+
+  clearFilters(): void {
+    this.clearQuery();
+    this.setType(null);
   }
 
   nextPage(): void {

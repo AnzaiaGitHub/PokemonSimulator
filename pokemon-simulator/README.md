@@ -1,16 +1,27 @@
 # PokemonSimulator
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 21.2.27.
+Angular application to browse Pokémon from PokéAPI, build a team and simulate battles. Downloaded
+data is cached in IndexedDB so the Pokédex keeps working without a connection.
+
+## Features
+
+- Pokédex with local search, type filter, pagination and Pokémon detail pages.
+- IndexedDB cache for Pokémon, moves, types, sprites, teams and trainers.
+- Cache-first repository with TTL and stale-while-revalidate.
+- HTTP queue with configurable concurrency, deduplication and exponential backoff for `429`/`5xx`.
+- Offline indicator and local sprite blobs.
+- Settings page to inspect storage usage, request persistent storage and clear cached data while
+  keeping teams and trainers.
 
 ## Development server
 
-To start a local development server, run:
+Run:
 
 ```bash
-ng serve
+npm start
 ```
 
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
+Open `http://localhost:4200/`. The application reloads automatically when source files change.
 
 ## API configuration
 
@@ -20,67 +31,38 @@ The PokéAPI base URL is read from `.env` in the project root:
 POKEAPI_URL=https://pokeapi.co/api/v2
 ```
 
-`npm start`, `npm run build` and `npm test` run `scripts/generate-env.mjs`, which generates the git-ignored `src/environments/environment.local.ts`. If the variable is missing, `https://pokeapi.co/api/v2` is used.
+`npm start`, `npm run build` and `npm test` run `scripts/generate-env.mjs`, which generates the
+git-ignored `src/environments/environment.local.ts`. If the variable is missing,
+`https://pokeapi.co/api/v2` is used.
 
-Downloaded data is cached in IndexedDB. Once cached, the app reads from the local database first.
+## Data and caching
 
-## Code scaffolding
+All screens read through `PokedexRepository`, never directly from the API. `LocalPokedexRepository`
+follows this policy:
 
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
+1. Return the copy stored in IndexedDB when it exists.
+2. If the copy is older than the TTL (24 hours by default), return it immediately and refresh it in
+   the background when the browser is online.
+3. If there is no local copy, call PokéAPI through the request queue.
+4. If there is no local copy and no connection, return a clear `NetworkError`.
 
-```bash
-ng generate component component-name
-```
-
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
-
-```bash
-ng generate --help
-```
-
-## Building
-
-To build the project run:
-
-```bash
-ng build
-```
-
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
-
-## Running unit tests
-
-To execute unit tests with the [Vitest](https://vitest.dev/) test runner, use the following command:
-
-```bash
-ng test
-```
+The 18 types, sprites and the Pokémon index are also stored locally. The schema is versioned, and
+upgrades preserve teams and trainers.
 
 ## Code quality
 
-Run ESLint on TypeScript and Angular templates:
-
 ```bash
 npm run lint
-```
-
-Format source files with Prettier, or check formatting without changing files:
-
-```bash
-npm run format
 npm run format:check
 ```
 
-## Running end-to-end tests
+## Tests
 
-For end-to-end (e2e) testing, run:
+Unit tests use Vitest and `fake-indexeddb`:
 
 ```bash
-ng e2e
+npm test
 ```
 
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
-
-## Additional Resources
-
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+They cover mappers, the HTTP queue, cache hit/miss, TTL/revalidation, offline errors, schema
+migrations, the Pokédex store and the main views.

@@ -2,7 +2,8 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ChangeDetectionStrategy, Component, effect, inject, input, OnInit } from '@angular/core';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
-import { debounceTime, distinctUntilChanged } from 'rxjs';
+import { debounceTime, distinctUntilChanged, from, switchMap } from 'rxjs';
+import { PokemonTypeName } from '../../../../core/models';
 import { AsyncState } from '../../../../shared/ui/async-state/async-state';
 import { Pagination } from '../../../../shared/ui/pagination/pagination';
 import { PokedexStore } from '../../stores/pokedex.store';
@@ -24,6 +25,9 @@ export class PokemonListPage implements OnInit {
   readonly q = input('');
 
   protected readonly searchControl = new FormControl('', { nonNullable: true });
+  protected readonly typeControl = new FormControl<PokemonTypeName | ''>('', {
+    nonNullable: true,
+  });
 
   constructor() {
     effect(() => {
@@ -36,25 +40,38 @@ export class PokemonListPage implements OnInit {
     });
 
     this.searchControl.valueChanges
-      .pipe(debounceTime(300), distinctUntilChanged(), takeUntilDestroyed())
-      .subscribe((value) => {
-        this.store.setQuery(value);
-        void this.router.navigate([], {
-          relativeTo: this.route,
-          queryParams: { q: value.trim() || null },
-          queryParamsHandling: 'merge',
-          replaceUrl: true,
-        });
-      });
+      .pipe(
+        debounceTime(300),
+        distinctUntilChanged(),
+        switchMap((value) => {
+          this.store.setQuery(value);
+
+          return from(
+            this.router.navigate([], {
+              relativeTo: this.route,
+              queryParams: { q: value.trim() || null },
+              queryParamsHandling: 'merge',
+              replaceUrl: true,
+            }),
+          );
+        }),
+        takeUntilDestroyed(),
+      )
+      .subscribe();
+
+    this.typeControl.valueChanges.pipe(takeUntilDestroyed()).subscribe((value) => {
+      this.store.setType(value || null);
+    });
   }
 
   ngOnInit(): void {
     this.store.load();
   }
 
-  protected clearSearch(): void {
+  protected clearFilters(): void {
     this.searchControl.setValue('', { emitEvent: false });
-    this.store.clearQuery();
+    this.typeControl.setValue('', { emitEvent: false });
+    this.store.clearFilters();
     void this.router.navigate([], {
       relativeTo: this.route,
       queryParams: { q: null },

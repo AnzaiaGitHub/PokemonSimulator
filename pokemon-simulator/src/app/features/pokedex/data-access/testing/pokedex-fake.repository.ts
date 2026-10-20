@@ -13,6 +13,7 @@ export class FakePokedexRepository implements PokedexRepository {
   constructor(
     private readonly index: readonly PokemonIndexEntry[] = DEFAULT_INDEX,
     private readonly details: readonly Pokemon[] = POKEDEX_FIXTURES,
+    private readonly types: readonly PokemonType[] = [],
   ) {}
 
   getPokemonIndex(): Observable<DataResult<readonly PokemonIndexEntry[]>> {
@@ -34,7 +35,13 @@ export class FakePokedexRepository implements PokedexRepository {
     return throwError(() => new NotFoundError('Move not found'));
   }
 
-  getType(): Observable<DataResult<PokemonType>> {
-    return throwError(() => new NotFoundError('Type not found'));
+  getType(name: string): Observable<DataResult<PokemonType>> {
+    const type = this.types.find((entry) => entry.name === name);
+
+    if (!type) {
+      return throwError(() => new NotFoundError('Type not found'));
+    }
+
+    return of({ data: type, source: 'cache' });
   }
 }

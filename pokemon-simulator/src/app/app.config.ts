@@ -4,12 +4,16 @@ import { provideRouter, withComponentInputBinding } from '@angular/router';
 
 import { routes } from './app.routes';
 import { httpErrorInterceptor } from './core/http/http-error.interceptor';
+import { httpRequestQueueInterceptor } from './core/http/request-queue';
 import { providePokedexLocal } from './features/pokedex/data-access/pokedex-local.config';
 
 export const appConfig: ApplicationConfig = {
   providers: [
     provideBrowserGlobalErrorListeners(),
-    provideHttpClient(withFetch(), withInterceptors([httpErrorInterceptor])),
+    provideHttpClient(
+      withFetch(),
+      withInterceptors([httpRequestQueueInterceptor, httpErrorInterceptor]),
+    ),
     provideRouter(routes, withComponentInputBinding()),
     providePokedexLocal(),
   ],

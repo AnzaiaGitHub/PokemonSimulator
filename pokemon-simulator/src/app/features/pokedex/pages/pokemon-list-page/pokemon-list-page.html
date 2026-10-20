@@ -11,26 +11,46 @@
       </p>
     </div>
 
-    <div class="w-full sm:max-w-xs">
-      <label for="pokedex-search" class="sr-only">Search Pokémon by name</label>
-      <input
-        id="pokedex-search"
-        type="search"
-        [formControl]="searchControl"
-        placeholder="Search by name…"
-        autocomplete="off"
-        class="w-full rounded-xl border border-slate-700 bg-slate-900/80 px-4 py-2.5 text-sm text-white placeholder:text-slate-500 focus:border-red-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500/40"
-      />
+    <div class="flex w-full flex-col gap-3 sm:max-w-md sm:flex-row">
+      <div class="w-full">
+        <label for="pokedex-search" class="sr-only">Search Pokémon by name</label>
+        <input
+          id="pokedex-search"
+          type="search"
+          [formControl]="searchControl"
+          placeholder="Search by name…"
+          autocomplete="off"
+          class="w-full rounded-xl border border-slate-700 bg-slate-900/80 px-4 py-2.5 text-sm text-white placeholder:text-slate-500 focus:border-red-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500/40"
+        />
+      </div>
+
+      <div class="w-full sm:w-48">
+        <label for="pokedex-type" class="sr-only">Filter by type</label>
+        <select
+          id="pokedex-type"
+          [formControl]="typeControl"
+          class="w-full rounded-xl border border-slate-700 bg-slate-900/80 px-4 py-2.5 text-sm capitalize text-white focus:border-red-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500/40"
+        >
+          <option value="">All types</option>
+          @for (type of store.availableTypes; track type) {
+            <option [value]="type">{{ type }}</option>
+          }
+        </select>
+      </div>
     </div>
   </header>
 
   <p class="mt-6 text-xs font-medium text-slate-500" aria-live="polite">
-    @if (store.isLoading()) {
+    @if (store.isLoading() || store.typeStatus() === 'loading') {
       Loading Pokémon…
     } @else {
       {{ store.totalResults() }} Pokémon found
     }
   </p>
+
+  @if (store.typeError()) {
+    <p class="mt-2 text-xs font-medium text-red-300" role="alert">{{ store.typeError() }}</p>
+  }
 
   <div class="mt-4">
     <app-async-state
@@ -49,10 +69,10 @@
       <button
         emptyAction
         type="button"
-        (click)="clearSearch()"
+        (click)="clearFilters()"
         class="rounded-xl border border-slate-700 px-5 py-2.5 text-sm font-semibold text-slate-200 transition hover:bg-slate-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-500"
       >
-        Clear search
+        Clear filters
       </button>
     </app-async-state>
   </div>

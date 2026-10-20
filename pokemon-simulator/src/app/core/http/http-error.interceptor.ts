@@ -22,5 +22,9 @@ function toDataError(error: HttpErrorResponse): Error {
     return new RateLimitError('PokéAPI rate limit reached');
   }
 
+  if (error.status === 0) {
+    return new NetworkError('No network connection and no saved copy of this data.');
+  }
+
   return new NetworkError(`Request failed with status ${error.status}`);
 }

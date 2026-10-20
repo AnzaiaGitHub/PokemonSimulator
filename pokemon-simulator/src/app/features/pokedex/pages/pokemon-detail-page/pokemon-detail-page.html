@@ -14,11 +14,10 @@
       <p class="self-end text-sm font-bold text-slate-500">{{ displayId() }}</p>
 
       <img
-        [ngSrc]="imageSrc()"
+        [src]="imageSrc()"
         width="256"
         height="256"
         [alt]="'Official artwork of ' + pokemon().name"
-        priority
         (error)="onImageError()"
         class="h-64 w-64"
       />

@@ -1,6 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import { POKEDEX_FIXTURES } from '../../data-access/mock/pokedex-fixtures';
+import { SpriteService } from '../../data-access/sprite';
 import { PokemonDetailPage } from './pokemon-detail-page';
 
 const PIKACHU = POKEDEX_FIXTURES[12];
@@ -11,7 +12,13 @@ describe('PokemonDetailPage', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [PokemonDetailPage],
-      providers: [provideRouter([])],
+      providers: [
+        provideRouter([]),
+        {
+          provide: SpriteService,
+          useValue: { load: () => Promise.resolve('blob:sprite'), release: () => undefined },
+        },
+      ],
     }).compileComponents();
 
     fixture = TestBed.createComponent(PokemonDetailPage);

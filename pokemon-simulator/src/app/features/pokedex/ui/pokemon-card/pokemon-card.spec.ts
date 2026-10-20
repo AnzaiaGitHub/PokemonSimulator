@@ -1,14 +1,19 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
+import { SpriteService } from '../../data-access/sprite';
 import { PokemonCard } from './pokemon-card';
 
 describe('PokemonCard', () => {
   let fixture: ComponentFixture<PokemonCard>;
+  const sprites = {
+    load: vi.fn(() => Promise.resolve('blob:sprite')),
+    release: vi.fn(),
+  };
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [PokemonCard],
-      providers: [provideRouter([])],
+      providers: [provideRouter([]), { provide: SpriteService, useValue: sprites }],
     }).compileComponents();
 
     fixture = TestBed.createComponent(PokemonCard);
@@ -25,12 +30,18 @@ describe('PokemonCard', () => {
     expect(compiled.querySelector('a')?.getAttribute('href')).toBe('/pokemon/pikachu');
   });
 
-  it('uses the remote sprite URL', () => {
+  it('loads the sprite through the local sprite service', async () => {
     fixture.componentRef.setInput('pokemon', { id: 13, name: 'pikachu' });
+    fixture.detectChanges();
+    await Promise.resolve();
     fixture.detectChanges();
 
     const image = fixture.nativeElement.querySelector('img') as HTMLImageElement;
 
-    expect(image.getAttribute('src')).toContain('/sprites/pokemon/13.png');
+    expect(sprites.load).toHaveBeenCalledWith(
+      13,
+      expect.stringContaining('/sprites/pokemon/13.png'),
+    );
+    expect(image.getAttribute('src')).toBe('blob:sprite');
   });
 });

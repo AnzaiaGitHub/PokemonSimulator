@@ -1,7 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { Observable, throwError } from 'rxjs';
 import { NetworkError } from '../../../core/errors/data-error';
-import { PokemonIndexEntry } from '../../../core/models';
+import { PokemonIndexEntry, PokemonType } from '../../../core/models';
 import { DataResult, POKEDEX_REPOSITORY } from '../data-access/pokedex.repository';
 import { FakePokedexRepository } from '../data-access/testing/pokedex-fake.repository';
 import { PokedexStore } from './pokedex.store';
@@ -63,6 +63,38 @@ describe('PokedexStore', () => {
     expect(store.totalResults()).toBe(1);
     expect(store.pageItems()[0]?.name).toBe('pikachu');
     expect(store.currentPage()).toBe(1);
+  });
+
+  it('filters by type and combines it with the name search', () => {
+    const electric: PokemonType = {
+      name: 'electric',
+      damageRelations: {
+        noDamageFrom: [],
+        halfDamageFrom: [],
+        doubleDamageFrom: [],
+        noDamageTo: [],
+        halfDamageTo: [],
+        doubleDamageTo: [],
+      },
+      pokemon: ['pikachu'],
+    };
+    const store = createStore(new FakePokedexRepository(undefined, undefined, [electric]));
+    store.load();
+
+    store.setType('electric');
+
+    expect(store.typeStatus()).toBe('ready');
+    expect(store.totalResults()).toBe(1);
+    expect(store.pageItems()[0]?.name).toBe('pikachu');
+
+    store.setQuery('bulbasaur');
+    expect(store.totalResults()).toBe(0);
+
+    store.setType(null);
+    expect(store.totalResults()).toBe(1);
+
+    store.clearQuery();
+    expect(store.totalResults()).toBe(24);
   });
 
   it('reports an empty result set', () => {

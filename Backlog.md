@@ -62,24 +62,24 @@ Aplicación web en Angular para explorar Pokémon con datos de PokéAPI, armar u
 
 ### US-001 🔴 Crear el proyecto (2 pts)
 Como desarrollador quiero un proyecto con configuración estricta para mantener calidad desde el inicio.
-- [ ] Proyecto creado con Angular CLI, *standalone*, `strict: true`.
-- [ ] ESLint y Prettier configurados con script `npm run lint`.
-- [ ] Estructura de carpetas por *features*.
-- [ ] URL de la API en `environment`, no escrita en el código.
+- [x] Proyecto creado con Angular CLI, *standalone*, `strict: true`.
+- [x] ESLint y Prettier configurados con script `npm run lint`.
+- [x] Estructura de carpetas por *features*.
+- [x] URL de la API en `environment`, no escrita en el código.
 
 ### US-002 🟡 CI y README inicial (2 pts)
-- [ ] GitHub Actions ejecuta lint, tests y build en cada push.
-- [ ] README con descripción, cómo ejecutar y cómo testear.
+- [ ] GitHub Actions ejecuta lint, tests y build en cada push. *(pospuesto a propósito)*
+- [x] README con descripción, cómo ejecutar y cómo testear.
 
 ### US-003 🔴 Shell de la aplicación y rutas con lazy loading (3 pts)
-- [ ] Header con navegación: Pokédex, Mi equipo, Batalla, Ajustes.
-- [ ] Cada *feature* se carga con `loadChildren`/`loadComponent`.
-- [ ] Ruta comodín con página 404.
+- [x] Header con navegación: Pokédex, Mi equipo, Batalla, Ajustes.
+- [x] Cada *feature* se carga con `loadChildren`/`loadComponent`.
+- [x] Ruta comodín con página 404.
 
 ### US-004 🔴 Modelos tipados y *mappers* (3 pts)
-- [ ] Interfaces para las respuestas de PokéAPI separadas de los modelos de dominio (`Pokemon`, `Move`, `PokemonType`, `TeamSlot`).
-- [ ] *Mappers* de respuesta → dominio con tests.
-- [ ] El resto de la app solo consume modelos de dominio.
+- [x] Interfaces para las respuestas de PokéAPI separadas de los modelos de dominio (`Pokemon`, `Move`, `PokemonType`, `TeamSlot`).
+- [x] *Mappers* de respuesta → dominio con tests.
+- [x] El resto de la app solo consume modelos de dominio.
 
 ---
 
@@ -89,78 +89,78 @@ Como desarrollador quiero un proyecto con configuración estricta para mantener 
 
 ### US-010 🔴 Base de datos IndexedDB versionada (5 pts)
 Como usuario quiero que lo descargado se guarde ordenado en mi navegador.
-- [ ] Stores e índices del esquema de la sección 2.
-- [ ] Versión de esquema con migraciones; subir de versión no borra datos del usuario (equipos).
-- [ ] Servicio `LocalDb` con API tipada, sin exponer Dexie/`idb` fuera de `core/`.
-- [ ] Si IndexedDB no está disponible (modo privado, error), la app sigue funcionando solo en memoria y avisa al usuario.
+- [x] Stores e índices del esquema de la sección 2.
+- [x] Versión de esquema con migraciones; subir de versión no borra datos del usuario (equipos).
+- [x] Servicio `LocalDb` con API tipada, sin exponer Dexie/`idb` fuera de `core/`.
+- [x] Si IndexedDB no está disponible (modo privado, error), la app sigue funcionando solo en memoria y avisa al usuario.
 
 ### US-011 🔴 Cliente HTTP con control de *rate limit* (5 pts)
-- [ ] Cola de peticiones con concurrencia máxima configurable (por defecto 4).
-- [ ] Reintentos con *backoff* exponencial ante `429` y `5xx`, con máximo de intentos.
-- [ ] Deduplicación: dos peticiones simultáneas a la misma URL generan una sola llamada.
-- [ ] Interceptor que traduce errores a un tipo propio (`NetworkError`, `NotFoundError`, `RateLimitError`).
-- [ ] Tests con `HttpTestingController`.
+- [x] Cola de peticiones con concurrencia máxima configurable (por defecto 4).
+- [x] Reintentos con *backoff* exponencial ante `429` y `5xx`, con máximo de intentos.
+- [x] Deduplicación: dos peticiones simultáneas a la misma URL generan una sola llamada.
+- [x] Interceptor que traduce errores a un tipo propio (`NetworkError`, `NotFoundError`, `RateLimitError`).
+- [x] Tests con `HttpTestingController`.
 
 ### US-012 🔴 Repositorio con política de caché (5 pts)
-- [ ] Métodos: `getPokemon`, `getMove`, `getType`, `getPokemonIndex`.
-- [ ] Política **cache-first**: si existe en IndexedDB, no se llama a la API.
-- [ ] *Stale-while-revalidate*: si el dato supera el TTL (configurable), se muestra el guardado y se actualiza en segundo plano si hay red.
-- [ ] Sin red y sin dato local, devuelve un error claro (no una pantalla en blanco).
-- [ ] Cada respuesta indica su origen (`cache` | `network`) para depuración.
+- [x] Métodos: `getPokemon`, `getMove`, `getType`, `getPokemonIndex`.
+- [x] Política **cache-first**: si existe en IndexedDB, no se llama a la API.
+- [x] *Stale-while-revalidate*: si el dato supera el TTL (configurable), se muestra el guardado y se actualiza en segundo plano si hay red.
+- [x] Sin red y sin dato local, devuelve un error claro (no una pantalla en blanco).
+- [x] Cada respuesta indica su origen (`cache` | `network`) para depuración.
 
 ### US-013 🔴 Índice local de Pokémon (3 pts)
-- [ ] En el primer arranque se descarga la lista completa (una sola llamada con límite alto) y se guarda en `pokemonIndex`.
-- [ ] La búsqueda por nombre se hace contra el índice local, sin llamadas a la API.
-- [ ] Barra de progreso o estado visible durante la primera carga.
+- [x] En el primer arranque se descarga la lista completa (una sola llamada con límite alto) y se guarda en `pokemonIndex`.
+- [x] La búsqueda por nombre se hace contra el índice local, sin llamadas a la API.
+- [x] Barra de progreso o estado visible durante la primera carga.
 
 ### US-014 🔴 Precarga de tipos (3 pts)
-- [ ] Los 18 tipos con sus relaciones de daño se descargan y guardan una sola vez.
-- [ ] Disponibles offline para el cálculo de efectividad.
+- [x] Los 18 tipos con sus relaciones de daño se descargan y guardan una sola vez.
+- [x] Disponibles offline para el cálculo de efectividad.
 
 ### US-015 🟡 Estado de conexión y origen de datos (2 pts)
-- [ ] Signal `isOnline` basada en `navigator.onLine` y eventos `online`/`offline`.
-- [ ] Banner discreto "Sin conexión: mostrando datos guardados".
+- [x] Signal `isOnline` basada en `navigator.onLine` y eventos `online`/`offline`.
+- [x] Banner discreto "Sin conexión: mostrando datos guardados".
 
 ### US-016 🟡 Gestión del almacenamiento (3 pts)
-- [ ] Pantalla Ajustes con tamaño aproximado usado (`navigator.storage.estimate`).
-- [ ] Solicita almacenamiento persistente (`navigator.storage.persist`) y muestra el resultado.
-- [ ] Botón "Borrar caché de datos" que **conserva** equipos y entrenadores.
-- [ ] Confirmación antes de borrar.
+- [x] Pantalla Ajustes con tamaño aproximado usado (`navigator.storage.estimate`).
+- [x] Solicita almacenamiento persistente (`navigator.storage.persist`) y muestra el resultado.
+- [x] Botón "Borrar caché de datos" que **conserva** equipos y entrenadores.
+- [x] Confirmación antes de borrar.
 
 ### US-017 🟡 Sprites guardados como Blob (3 pts)
 Sin esto, las imágenes no se verían sin conexión.
-- [ ] Al ver un Pokémon, su sprite se guarda en `sprites` y se muestra desde ahí.
-- [ ] Si falla, se muestra una imagen de reemplazo.
-- [ ] Se liberan las URLs de objeto (`URL.revokeObjectURL`) al destruir el componente.
+- [x] Al ver un Pokémon, su sprite se guarda en `sprites` y se muestra desde ahí.
+- [x] Si falla, se muestra una imagen de reemplazo.
+- [x] Se liberan las URLs de objeto (`URL.revokeObjectURL`) al destruir el componente.
 
 ### US-018 🔴 Tests de la capa de datos (3 pts)
-- [ ] Tests con `fake-indexeddb`: cache hit, cache miss, TTL vencido, error de red con y sin dato local.
-- [ ] Test de la cola: respeta la concurrencia y reintenta ante `429`.
+- [x] Tests con `fake-indexeddb`: cache hit, cache miss, TTL vencido, error de red con y sin dato local.
+- [x] Test de la cola: respeta la concurrencia y reintenta ante `429`.
 
 ---
 
 ## E2 — Pokédex (exploración)
 
 ### US-020 🔴 Lista paginada (3 pts)
-- [ ] Muestra nombre e imagen (sprite por id), 20 por página.
-- [ ] Paginación anterior/siguiente leyendo del índice local.
-- [ ] Usa `@for` con `track`.
+- [x] Muestra nombre e imagen (sprite por id), 20 por página.
+- [x] Paginación anterior/siguiente leyendo del índice local.
+- [x] Usa `@for` con `track`.
 
 ### US-021 🔴 Búsqueda reactiva (3 pts)
-- [ ] Campo de búsqueda con `debounceTime`, `distinctUntilChanged` y `switchMap`.
-- [ ] Filtra contra el índice local; el término se refleja en la URL (query param).
-- [ ] Estado "sin resultados".
+- [x] Campo de búsqueda con `debounceTime`, `distinctUntilChanged` y `switchMap`.
+- [x] Filtra contra el índice local; el término se refleja en la URL (query param).
+- [x] Estado "sin resultados".
 
 ### US-022 🔴 Detalle del Pokémon (3 pts)
-- [ ] Ruta `/pokemon/:name` con *resolver* que usa el repositorio.
-- [ ] Muestra tipos, altura, peso y stats base.
-- [ ] Nombre inexistente redirige a 404.
+- [x] Ruta `/pokemon/:name` con *resolver* que usa el repositorio.
+- [x] Muestra tipos, altura, peso y stats base.
+- [x] Nombre inexistente redirige a 404.
 
 ### US-023 🔴 Estados de carga, vacío y error (2 pts)
-- [ ] Componente reutilizable con *skeleton*, mensaje de error y botón "Reintentar".
+- [x] Componente reutilizable con *skeleton*, mensaje de error y botón "Reintentar".
 
 ### US-024 🟡 Filtro por tipo (3 pts)
-- [ ] Selector de tipo que filtra la lista (combinable con la búsqueda).
+- [x] Selector de tipo que filtra la lista (combinable con la búsqueda).
 
 ---
 

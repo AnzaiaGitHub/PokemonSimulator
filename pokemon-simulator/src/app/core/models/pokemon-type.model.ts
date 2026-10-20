@@ -47,4 +47,5 @@ export interface TypeDamageRelations {
 export interface PokemonType {
   readonly name: PokemonTypeName;
   readonly damageRelations: TypeDamageRelations;
+  readonly pokemon: readonly string[];
 }

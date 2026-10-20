@@ -12,6 +12,7 @@ export function mapTypeResponse(response: TypeResponse): PokemonType {
       halfDamageTo: mapTypeNames(response.damage_relations.half_damage_to),
       doubleDamageTo: mapTypeNames(response.damage_relations.double_damage_to),
     },
+    pokemon: response.pokemon.map((entry) => entry.pokemon.name),
   };
 }
 

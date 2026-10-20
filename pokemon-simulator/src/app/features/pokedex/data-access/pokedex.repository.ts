@@ -4,6 +4,17 @@ import { Move, Pokemon, PokemonIndexEntry, PokemonType } from '../../../core/mod
 
 export type DataSource = 'cache' | 'network';
 
+export interface PokedexCacheConfig {
+  readonly ttlMs: number;
+}
+
+export const DEFAULT_CACHE_TTL_MS = 24 * 60 * 60 * 1000;
+
+export const POKEDEX_CACHE_CONFIG = new InjectionToken<PokedexCacheConfig>('PokedexCacheConfig', {
+  providedIn: 'root',
+  factory: () => ({ ttlMs: DEFAULT_CACHE_TTL_MS }),
+});
+
 export interface DataResult<T> {
   readonly data: T;
   readonly source: DataSource;

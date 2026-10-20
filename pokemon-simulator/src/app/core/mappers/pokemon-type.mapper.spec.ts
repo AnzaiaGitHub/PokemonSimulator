@@ -23,12 +23,15 @@ const TYPE_RESPONSE: TypeResponse = {
   generation: { name: 'generation-i', url: '' },
   move_damage_class: { name: 'special', url: '' },
   moves: [],
-  pokemon: [],
+  pokemon: [
+    { slot: 1, pokemon: { name: 'pikachu', url: '' } },
+    { slot: 2, pokemon: { name: 'raichu', url: '' } },
+  ],
   names: [],
 };
 
 describe('mapTypeResponse', () => {
-  it('maps the type and all its damage relations', () => {
+  it('maps the type and all its damage relations and Pokémon', () => {
     expect(mapTypeResponse(TYPE_RESPONSE)).toEqual({
       name: 'electric',
       damageRelations: {
@@ -39,6 +42,7 @@ describe('mapTypeResponse', () => {
         halfDamageTo: ['electric', 'grass', 'dragon'],
         doubleDamageTo: ['water'],
       },
+      pokemon: ['pikachu', 'raichu'],
     });
   });
 

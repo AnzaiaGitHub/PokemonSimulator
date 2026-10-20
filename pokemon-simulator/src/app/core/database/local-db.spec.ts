@@ -1,8 +1,9 @@
 import { TestBed } from '@angular/core/testing';
+import Dexie from 'dexie';
 import { Move, Pokemon, PokemonType } from '../models';
 import { LocalDb } from './local-db';
 import { APP_DATABASE, LOCAL_DB_NAME } from './local-db.provider';
-import { AppDatabase } from './local-db.schema';
+import { AppDatabase, DB_VERSION, SCHEMA_V1 } from './local-db.schema';
 import { TeamRecord, TrainerRecord } from './local-db.records';
 
 const POKEMON: Pokemon = {
@@ -46,6 +47,7 @@ const TYPE: PokemonType = {
     halfDamageTo: ['electric', 'grass', 'dragon'],
     doubleDamageTo: ['water', 'flying'],
   },
+  pokemon: ['pikachu'],
 };
 
 const TEAM: TeamRecord = {
@@ -118,7 +120,13 @@ describe('LocalDb', () => {
     ]);
 
     expect(db.table('pokemonIndex').schema.primKey.name).toBe('name');
-    expect(db.table('teams').schema.indexes.map((index) => index.name)).toEqual(['trainerId']);
+    expect(
+      db
+        .table('teams')
+        .schema.indexes.map((index) => index.name)
+        .sort(),
+    ).toEqual(['name', 'trainerId']);
+    expect(db.table('trainers').schema.indexes.map((index) => index.name)).toEqual(['name']);
   });
 
   it('uses IndexedDB when available', async () => {
@@ -176,6 +184,26 @@ describe('LocalDb', () => {
     await db.open();
 
     expect(await localDb.getTeam(TEAM.id)).toEqual(TEAM);
+  });
+
+  it('upgrades the schema without deleting teams', async () => {
+    const name = `pokemon-simulator-upgrade-test-${++dbCounter}`;
+    const legacy = new Dexie(name);
+
+    legacy.version(1).stores(SCHEMA_V1);
+    await legacy.open();
+    await legacy.table('teams').put(TEAM);
+    legacy.close();
+
+    TestBed.configureTestingModule({
+      providers: [{ provide: LOCAL_DB_NAME, useValue: name }],
+    });
+
+    const localDb = TestBed.inject(LocalDb);
+    database = TestBed.inject(APP_DATABASE);
+
+    expect(await localDb.getTeam(TEAM.id)).toEqual(TEAM);
+    expect(await localDb.getMeta<number>('schemaVersion')).toBe(DB_VERSION);
   });
 
   it('falls back to memory when IndexedDB is unavailable', async () => {
