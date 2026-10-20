@@ -48,21 +48,35 @@ export class SpriteService {
     this.objectUrls.delete(pokemonId);
   }
 
-  private async resolve(pokemonId: number, remoteUrl: string): Promise<string> {
-    let blob = (await this.localDb.getSprite(pokemonId))?.blob;
+  async prefetch(pokemonId: number, remoteUrl: string): Promise<void> {
+    const stored = await this.localDb.getSprite(pokemonId);
 
-    if (!blob) {
-      if (!this.connectivity.isOnline()) {
-        throw new NetworkError('The sprite is not available offline yet.');
-      }
-
-      blob = await firstValueFrom(this.http.get(remoteUrl, { responseType: 'blob' }));
-      await this.localDb.putSprite({ pokemonId, blob, fetchedAt: Date.now() });
+    if (stored) {
+      return;
     }
+
+    await this.download(pokemonId, remoteUrl);
+  }
+
+  private async resolve(pokemonId: number, remoteUrl: string): Promise<string> {
+    const blob =
+      (await this.localDb.getSprite(pokemonId))?.blob ??
+      (await this.download(pokemonId, remoteUrl));
 
     const objectUrl = URL.createObjectURL(blob);
     this.objectUrls.set(pokemonId, objectUrl);
 
     return objectUrl;
+  }
+
+  private async download(pokemonId: number, remoteUrl: string): Promise<Blob> {
+    if (!this.connectivity.isOnline()) {
+      throw new NetworkError('The sprite is not available offline yet.');
+    }
+
+    const blob = await firstValueFrom(this.http.get(remoteUrl, { responseType: 'blob' }));
+    await this.localDb.putSprite({ pokemonId, blob, fetchedAt: Date.now() });
+
+    return blob;
   }
 }

@@ -12,8 +12,12 @@ data is cached in IndexedDB so the Pokédex keeps working without a connection.
 - Offline indicator and local sprite blobs.
 - Move editor for every team slot: learnset loaded on demand, search and filters by type and class,
   max 4 moves with duplicate validation, attack-move warnings and default attack moves.
+- "Download for offline" on the team page: saves details, sprites and learnable moves for the
+  current team with progress, failure reporting and cancellation.
 - Settings page to inspect storage usage, request persistent storage and clear cached data while
   keeping teams and trainers.
+- `OnPush` everywhere, `track` in every `@for` and `@defer` for the team summary, move selector and
+  Pokémon stats.
 
 ## Development server
 

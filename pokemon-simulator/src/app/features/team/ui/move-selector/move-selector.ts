@@ -13,6 +13,8 @@ import {
   viewChild,
 } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
+import { A11yModule } from '@angular/cdk/a11y';
+import { DOCUMENT } from '@angular/common';
 import { NonNullableFormBuilder, ReactiveFormsModule } from '@angular/forms';
 import {
   Move,
@@ -37,7 +39,7 @@ type MoveStatus = 'loading' | 'ready' | 'error';
 
 @Component({
   selector: 'app-move-selector',
-  imports: [ReactiveFormsModule, PokemonTypeBadge],
+  imports: [A11yModule, ReactiveFormsModule, PokemonTypeBadge],
   templateUrl: './move-selector.html',
   styleUrl: './move-selector.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -49,12 +51,14 @@ export class MoveSelector {
   private readonly moveCatalog = inject(MoveCatalog);
   private readonly teamStore = inject(TeamStore);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly document = inject(DOCUMENT);
 
   readonly slot = input.required<TeamSlot>();
   readonly index = input.required<number>();
   readonly closed = output<void>();
 
   private readonly searchInput = viewChild<ElementRef<HTMLInputElement>>('searchInput');
+  private previousFocus: HTMLElement | null = null;
   private initialized = false;
   private destroyed = false;
 
@@ -136,9 +140,13 @@ export class MoveSelector {
       void this.loadMoves(slot);
     });
 
+    const activeElement = this.document.activeElement;
+    this.previousFocus = activeElement instanceof HTMLElement ? activeElement : null;
+
     afterNextRender(() => this.searchInput()?.nativeElement.focus());
     this.destroyRef.onDestroy(() => {
       this.destroyed = true;
+      this.previousFocus?.focus();
     });
   }
 

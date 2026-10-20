@@ -223,12 +223,12 @@ Sin esto, las imágenes no se verían sin conexión.
 ## E5 — Robustez offline y rendimiento
 
 ### US-050 🟡 "Descargar para uso sin conexión" (3 pts)
-- [ ] Botón que descarga y guarda detalles, sprites y movimientos del equipo actual.
-- [ ] Muestra progreso y resultado; es cancelable.
+- [x] Botón que descarga y guarda detalles, sprites y movimientos del equipo actual.
+- [x] Muestra progreso y resultado; es cancelable.
 
 ### US-051 🔴 Optimización (2 pts)
-- [ ] `OnPush` en todos los componentes, `track` en todos los `@for`.
-- [ ] `@defer` en secciones pesadas (resumen del equipo, selector de movimientos).
+- [x] `OnPush` en todos los componentes, `track` en todos los `@for`.
+- [x] `@defer` en secciones pesadas (resumen del equipo, selector de movimientos).
 
 ### US-052 🟡 Accesibilidad y auditoría (3 pts)
 - [ ] Lighthouse: Accesibilidad y Buenas prácticas ≥ 90.

@@ -4,13 +4,20 @@ import { signal } from '@angular/core';
 import { CdkDragDrop } from '@angular/cdk/drag-drop';
 import { TeamStore, TEAM_SIZE, TeamSlots } from '../../stores/team.store';
 import { TeamSummaryStore } from '../../stores/team-summary/team-summary.store';
+import { TeamOfflineDownload } from '../../data-access/offline-download';
 import { TeamManagement } from './team-management';
 
 describe('TeamManagement', () => {
   let fixture: ComponentFixture<TeamManagement>;
 
-  const mockSlots = signal<Array<{ pokemon: { name: string; types: string[]; id: number }; moves: [] } | null>>(
-    Array.from({ length: TEAM_SIZE }, (_, i) => (i < 2 ? { pokemon: { name: `poke-${i + 1}`, types: ['normal'], id: i + 1 }, moves: [] } : null)),
+  const mockSlots = signal<
+    Array<{ pokemon: { name: string; types: string[]; id: number }; moves: [] } | null>
+  >(
+    Array.from({ length: TEAM_SIZE }, (_, i) =>
+      i < 2
+        ? { pokemon: { name: `poke-${i + 1}`, types: ['normal'], id: i + 1 }, moves: [] }
+        : null,
+    ),
   );
 
   const mockTeamStore = {
@@ -36,6 +43,17 @@ describe('TeamManagement', () => {
     load: vi.fn(() => Promise.resolve()),
   };
 
+  const mockOfflineDownload = {
+    status: signal<'idle' | 'running' | 'success' | 'cancelled' | 'error'>('idle').asReadonly(),
+    completed: signal(0).asReadonly(),
+    total: signal(0).asReadonly(),
+    failed: signal(0).asReadonly(),
+    percent: signal(0).asReadonly(),
+    message: signal<string | null>(null).asReadonly(),
+    start: vi.fn(() => Promise.resolve()),
+    cancel: vi.fn(),
+  };
+
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [TeamManagement],
@@ -43,6 +61,7 @@ describe('TeamManagement', () => {
         provideRouter([]),
         { provide: TeamStore, useValue: mockTeamStore },
         { provide: TeamSummaryStore, useValue: mockSummaryStore },
+        { provide: TeamOfflineDownload, useValue: mockOfflineDownload },
       ],
     }).compileComponents();
 

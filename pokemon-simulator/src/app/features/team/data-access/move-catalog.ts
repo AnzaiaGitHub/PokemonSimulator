@@ -46,6 +46,7 @@ export class MoveCatalog {
   async loadMoves(
     names: readonly string[],
     onProgress?: (progress: MoveLoadProgress) => void,
+    isCancelled?: () => boolean,
   ): Promise<MoveLoadResult> {
     const uniqueNames = uniqueLowercase(names);
     const moves = new Array<Move | undefined>(uniqueNames.length);
@@ -56,6 +57,10 @@ export class MoveCatalog {
 
     const worker = async (): Promise<void> => {
       while (nextIndex < uniqueNames.length) {
+        if (isCancelled?.()) {
+          return;
+        }
+
         const index = nextIndex;
         nextIndex += 1;
         const name = uniqueNames[index];
@@ -66,6 +71,10 @@ export class MoveCatalog {
         } catch {
           failures += 1;
           failed.push(name);
+        }
+
+        if (isCancelled?.()) {
+          return;
         }
 
         onProgress?.({ loaded, failed: failures, total: uniqueNames.length });

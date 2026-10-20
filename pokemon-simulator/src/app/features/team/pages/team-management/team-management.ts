@@ -7,6 +7,8 @@ import { TeamSlotCard } from '../../ui/team-slot-card/team-slot-card';
 import { TeamSummary } from '../../ui/team-summary/team-summary';
 import { TeamSummaryStore } from '../../stores/team-summary/team-summary.store';
 import { AsyncState } from '../../../../shared/ui/async-state/async-state';
+import { Connectivity } from '../../../../core/connectivity/connectivity';
+import { TeamOfflineDownload } from '../../data-access/offline-download';
 
 @Component({
   selector: 'app-team-management',
@@ -18,8 +20,16 @@ import { AsyncState } from '../../../../shared/ui/async-state/async-state';
 export class TeamManagement {
   private readonly teamStore = inject(TeamStore);
   private readonly summaryStore = inject(TeamSummaryStore);
+  private readonly offlineDownload = inject(TeamOfflineDownload);
 
   readonly slots = this.teamStore.slots;
+  readonly isOnline = inject(Connectivity).isOnline;
+  readonly offlineStatus = this.offlineDownload.status;
+  readonly offlineCompleted = this.offlineDownload.completed;
+  readonly offlineTotal = this.offlineDownload.total;
+  readonly offlineFailed = this.offlineDownload.failed;
+  readonly offlinePercent = this.offlineDownload.percent;
+  readonly offlineMessage = this.offlineDownload.message;
   readonly occupiedCount = this.teamStore.occupiedCount;
   readonly isFull = this.teamStore.isFull;
   readonly status = this.teamStore.status;
@@ -49,6 +59,14 @@ export class TeamManagement {
 
   drop(event: CdkDragDrop<TeamSlots>): void {
     this.teamStore.swapSlots(event.previousIndex, event.currentIndex);
+  }
+
+  downloadForOffline(): void {
+    void this.offlineDownload.start(this.slots());
+  }
+
+  cancelOfflineDownload(): void {
+    this.offlineDownload.cancel();
   }
 
   moveUp(index: number): void {

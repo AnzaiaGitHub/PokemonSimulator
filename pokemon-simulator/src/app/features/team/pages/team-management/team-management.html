@@ -31,6 +31,81 @@
     </div>
   </header>
 
+  <section
+    class="mt-6 rounded-2xl border border-slate-800 bg-slate-900/60 p-5"
+    aria-labelledby="offline-download-title"
+  >
+    <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+      <div>
+        <h2 id="offline-download-title" class="text-sm font-semibold text-white">
+          Offline availability
+        </h2>
+        <p class="mt-1 max-w-2xl text-xs text-slate-400">
+          Save the details, sprites and learnable moves of every Pokémon in your team. Once
+          finished, your team keeps working without a connection.
+        </p>
+        @if (!isOnline()) {
+          <p class="mt-2 text-xs font-medium text-amber-300">
+            Connect to the internet to download your team.
+          </p>
+        }
+      </div>
+
+      <div class="flex shrink-0 items-center gap-2">
+        @if (offlineStatus() === 'running') {
+          <button
+            type="button"
+            (click)="cancelOfflineDownload()"
+            class="rounded-xl border border-slate-700 px-4 py-2 text-sm font-semibold text-slate-200 transition hover:bg-slate-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-500"
+          >
+            Cancel download
+          </button>
+        } @else {
+          <button
+            type="button"
+            [disabled]="occupiedCount() === 0 || !isOnline()"
+            (click)="downloadForOffline()"
+            class="rounded-xl bg-red-500 px-4 py-2 text-sm font-semibold text-white transition hover:bg-red-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-500 disabled:cursor-not-allowed disabled:opacity-40"
+          >
+            Download for offline
+          </button>
+        }
+      </div>
+    </div>
+
+    @if (offlineStatus() === 'running') {
+      <div class="mt-4" role="status" aria-live="polite">
+        <div class="flex items-center justify-between text-xs font-medium text-slate-400">
+          <span>Downloading team data…</span>
+          <span>{{ offlineCompleted() }} / {{ offlineTotal() }} ({{ offlinePercent() }}%)</span>
+        </div>
+        <progress
+          class="mt-2 h-2 w-full overflow-hidden rounded-full accent-red-500"
+          [value]="offlineCompleted()"
+          [max]="offlineTotal() || 1"
+          aria-label="Team data downloaded"
+        ></progress>
+        @if (offlineFailed() > 0) {
+          <p class="mt-1 text-xs text-amber-300">
+            {{ offlineFailed() }} item(s) could not be saved.
+          </p>
+        }
+      </div>
+    }
+
+    @if (offlineMessage(); as message) {
+      <p
+        class="mt-3 text-xs font-medium"
+        [class.text-emerald-300]="offlineStatus() === 'success'"
+        [class.text-amber-300]="offlineStatus() === 'cancelled'"
+        [class.text-red-300]="offlineStatus() === 'error'"
+        role="status"
+      >
+        {{ message }}
+      </p>
+    }
+  </section>
+
   <app-async-state
     [status]="status()"
     [errorMessage]="error()"
@@ -73,10 +148,16 @@
       Type coverage, weaknesses and resistances based on your current team composition.
     </p>
 
-    <app-team-summary class="mt-4" />
+    @defer (on viewport) {
+      <app-team-summary class="mt-4" />
+    } @placeholder {
+      <div class="mt-4 h-32 animate-pulse rounded-2xl bg-slate-900/60" aria-hidden="true"></div>
+    }
   </div>
 </section>
 
-@if (editing(); as editing) {
-  <app-move-selector [slot]="editing.slot" [index]="editing.index" (closed)="closeMoveEditor()" />
+@defer (when editing() !== null) {
+  @if (editing(); as editing) {
+    <app-move-selector [slot]="editing.slot" [index]="editing.index" (closed)="closeMoveEditor()" />
+  }
 }

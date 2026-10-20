@@ -84,6 +84,10 @@ export class TeamSlotCard {
         return;
       }
 
+      if (this.currentId !== null) {
+        this.sprites.release(this.currentId);
+      }
+
       this.currentId = slot.pokemon.id;
       void this.loadSprite(slot.pokemon);
     });
