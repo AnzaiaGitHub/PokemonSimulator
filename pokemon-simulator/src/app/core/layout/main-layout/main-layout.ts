@@ -1,5 +1,6 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
+import { LocalDb } from '../../database';
 
 interface NavItem {
   readonly label: string;
@@ -15,6 +16,8 @@ interface NavItem {
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class MainLayout {
+  protected readonly storageStatus = inject(LocalDb).status;
+
   protected readonly navItems: readonly NavItem[] = [
     {
       label: 'Pokedex',

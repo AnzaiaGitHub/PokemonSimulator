@@ -74,6 +74,15 @@
       </nav>
     </header>
 
+    @if (storageStatus() === 'memory') {
+      <p
+        role="status"
+        class="border-b border-amber-500/40 bg-amber-500/10 px-4 py-2 text-sm font-medium text-amber-200"
+      >
+        Local storage is unavailable: downloaded data will not be kept after reloading.
+      </p>
+    }
+
     <main class="flex-1 px-4 py-6 sm:px-6 lg:px-10 lg:py-10">
       <router-outlet></router-outlet>
     </main>
