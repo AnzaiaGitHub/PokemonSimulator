@@ -11,6 +11,8 @@ import { firstValueFrom } from 'rxjs';
 import { Pokemon } from '../../../../core/models';
 import { capitalizeName, TeamStore } from '../../stores/team.store';
 import { POKEDEX_REPOSITORY } from '../../../pokedex/data-access/pokedex.repository';
+import { MoveCatalog } from '../../data-access/move-catalog';
+import { pickDefaultMoves } from '../../utils/move-selection';
 
 @Component({
   selector: 'app-add-to-team-button',
@@ -22,6 +24,7 @@ import { POKEDEX_REPOSITORY } from '../../../pokedex/data-access/pokedex.reposit
 export class AddToTeamButton {
   private readonly teamStore = inject(TeamStore);
   private readonly repository = inject(POKEDEX_REPOSITORY);
+  private readonly moveCatalog = inject(MoveCatalog);
 
   readonly pokemon = input<Pokemon | null>(null);
   readonly name = input.required<string>();
@@ -69,8 +72,14 @@ export class AddToTeamButton {
       const result = this.teamStore.addPokemon(pokemon);
 
       if (result.ok) {
+        const defaultMoves = await this.applyCachedDefaults(result.index, pokemon);
+        const suffix =
+          defaultMoves > 0
+            ? ` with ${defaultMoves} default move${defaultMoves === 1 ? '' : 's'}`
+            : '';
+
         this._message.set(
-          `${capitalizeName(pokemon.name)} added to slot ${result.index + 1}`,
+          `${capitalizeName(pokemon.name)} added to slot ${result.index + 1}${suffix}`,
         );
         this._messageType.set('success');
       } else {
@@ -88,5 +97,20 @@ export class AddToTeamButton {
   private async fetchPokemon(name: string): Promise<Pokemon> {
     const { data } = await firstValueFrom(this.repository.getPokemon(name));
     return data;
+  }
+
+  private async applyCachedDefaults(index: number, pokemon: Pokemon): Promise<number> {
+    try {
+      const cached = await this.moveCatalog.getCachedMoves(pokemon.learnset);
+      const defaults = pickDefaultMoves(cached);
+
+      if (defaults.length === 0) {
+        return 0;
+      }
+
+      return this.teamStore.setMoves(index, defaults).ok ? defaults.length : 0;
+    } catch {
+      return 0;
+    }
   }
 }

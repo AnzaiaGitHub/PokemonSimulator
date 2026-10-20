@@ -1,5 +1,5 @@
 import { TestBed } from '@angular/core/testing';
-import { Pokemon, TeamSlot } from '../../../core/models';
+import { Move, Pokemon, TeamSlot } from '../../../core/models';
 import {
   ALLOW_DUPLICATE_POKEMON,
   createEmptyTeamSlots,
@@ -12,6 +12,20 @@ import {
 import { LocalDb } from '../../../core/database';
 import { LOCAL_DB_NAME } from '../../../core/database/local-db.provider';
 import { TeamRecord } from '../../../core/database/local-db.records';
+
+function createMove(name: string): Move {
+  return {
+    id: 1,
+    name,
+    type: 'normal',
+    damageClass: 'physical',
+    power: 40,
+    accuracy: 100,
+    pp: 35,
+    priority: 0,
+    fetchedAt: 0,
+  };
+}
 
 function createPokemon(id: number, name: string): Pokemon {
   return {
@@ -52,9 +66,7 @@ async function createLoadedStore(
   initialSlots: TeamRecord['slots'] = createEmptyTeamSlots(),
 ): Promise<TeamStore> {
   TestBed.configureTestingModule({
-    providers: [
-      { provide: LOCAL_DB_NAME, useValue: `test-${Date.now()}-${Math.random()}` },
-    ],
+    providers: [{ provide: LOCAL_DB_NAME, useValue: `test-${Date.now()}-${Math.random()}` }],
   });
 
   const store = TestBed.inject(TeamStore);
@@ -68,9 +80,7 @@ async function createLoadedStore(
 
 function createStoreSync(): TeamStore {
   TestBed.configureTestingModule({
-    providers: [
-      { provide: LOCAL_DB_NAME, useValue: `test-sync-${Date.now()}-${Math.random()}` },
-    ],
+    providers: [{ provide: LOCAL_DB_NAME, useValue: `test-sync-${Date.now()}-${Math.random()}` }],
   });
 
   return TestBed.inject(TeamStore);
@@ -205,7 +215,9 @@ describe('TeamStore', () => {
     });
 
     it('returns error when team is full', async () => {
-      const fullSlots = Array.from({ length: TEAM_SIZE }, (_, i) => createSlot(i + 1, `poke-${i + 1}`));
+      const fullSlots = Array.from({ length: TEAM_SIZE }, (_, i) =>
+        createSlot(i + 1, `poke-${i + 1}`),
+      );
       const store = await createLoadedStore(fullSlots);
       const pikachu = createPokemon(25, 'pikachu');
 
@@ -298,6 +310,81 @@ describe('TeamStore', () => {
 
       expect(store.removePokemon(-1)).toBe(false);
       expect(store.removePokemon(TEAM_SIZE)).toBe(false);
+    });
+  });
+
+  describe('setMoves', () => {
+    it('stores up to four moves in the selected slot', async () => {
+      const store = await createLoadedStore();
+      store.addPokemon(createPokemon(25, 'pikachu'));
+      const moves = [
+        createMove('thunder-shock'),
+        createMove('quick-attack'),
+        createMove('thunderbolt'),
+        createMove('iron-tail'),
+      ];
+
+      const result = store.setMoves(0, moves);
+
+      expect(result.ok).toBe(true);
+      expect(store.slots()[0]?.moves).toEqual(moves);
+    });
+
+    it('rejects more than four moves', async () => {
+      const store = await createLoadedStore();
+      store.addPokemon(createPokemon(25, 'pikachu'));
+      const moves = Array.from({ length: 5 }, (_value, index) => createMove(`move-${index + 1}`));
+
+      const result = store.setMoves(0, moves);
+
+      expect(result).toEqual({
+        ok: false,
+        reason: 'too-many',
+        message: expect.stringContaining('4'),
+      });
+      expect(store.slots()[0]?.moves).toEqual([]);
+    });
+
+    it('rejects repeated moves ignoring case', async () => {
+      const store = await createLoadedStore();
+      store.addPokemon(createPokemon(25, 'pikachu'));
+
+      const result = store.setMoves(0, [createMove('tackle'), createMove('TACKLE')]);
+
+      expect(result).toEqual({
+        ok: false,
+        reason: 'duplicate',
+        message: expect.any(String),
+      });
+      expect(store.slots()[0]?.moves).toEqual([]);
+    });
+
+    it('rejects moves for an empty or invalid slot', async () => {
+      const store = await createLoadedStore();
+
+      expect(store.setMoves(0, [createMove('tackle')])).toEqual({
+        ok: false,
+        reason: 'invalid',
+        message: expect.any(String),
+      });
+      expect(store.setMoves(TEAM_SIZE, [createMove('tackle')])).toEqual({
+        ok: false,
+        reason: 'invalid',
+        message: expect.any(String),
+      });
+    });
+
+    it('persists selected moves with the team', async () => {
+      const store = await createLoadedStore();
+      store.addPokemon(createPokemon(25, 'pikachu'));
+      store.setMoves(0, [createMove('thunderbolt')]);
+
+      await new Promise((resolve) => setTimeout(resolve, 10));
+
+      const localDb = TestBed.inject(LocalDb);
+      const record = await localDb.getTeam(DEFAULT_TEAM_ID);
+
+      expect(record?.slots[0]?.moves[0]?.name).toBe('thunderbolt');
     });
   });
 

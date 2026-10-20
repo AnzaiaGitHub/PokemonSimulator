@@ -1,7 +1,8 @@
-import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { CdkDragDrop, DragDropModule } from '@angular/cdk/drag-drop';
 import { RouterLink } from '@angular/router';
 import { TeamStore, TEAM_SIZE, TeamSlots } from '../../stores/team.store';
+import { MoveSelector } from '../../ui/move-selector/move-selector';
 import { TeamSlotCard } from '../../ui/team-slot-card/team-slot-card';
 import { TeamSummary } from '../../ui/team-summary/team-summary';
 import { TeamSummaryStore } from '../../stores/team-summary/team-summary.store';
@@ -9,7 +10,7 @@ import { AsyncState } from '../../../../shared/ui/async-state/async-state';
 
 @Component({
   selector: 'app-team-management',
-  imports: [DragDropModule, RouterLink, TeamSlotCard, TeamSummary, AsyncState],
+  imports: [DragDropModule, RouterLink, MoveSelector, TeamSlotCard, TeamSummary, AsyncState],
   templateUrl: './team-management.html',
   styleUrl: './team-management.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -23,6 +24,20 @@ export class TeamManagement {
   readonly isFull = this.teamStore.isFull;
   readonly status = this.teamStore.status;
   readonly error = this.teamStore.error;
+
+  private readonly _editingIndex = signal<number | null>(null);
+  readonly editingIndex = this._editingIndex.asReadonly();
+  readonly editing = computed(() => {
+    const index = this._editingIndex();
+
+    if (index === null) {
+      return null;
+    }
+
+    const slot = this.slots()[index];
+
+    return slot ? { slot, index } : null;
+  });
 
   readonly summary = this.summaryStore.summary;
   readonly summaryStatus = this.summaryStore.status;
@@ -46,6 +61,16 @@ export class TeamManagement {
 
   remove(index: number): void {
     this.teamStore.removePokemon(index);
+  }
+
+  openMoveEditor(index: number): void {
+    if (this.slots()[index]) {
+      this._editingIndex.set(index);
+    }
+  }
+
+  closeMoveEditor(): void {
+    this._editingIndex.set(null);
   }
 
   trackSlot(index: number, slot: TeamSlots[number]): string | number {

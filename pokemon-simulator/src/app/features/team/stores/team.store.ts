@@ -1,7 +1,8 @@
 import { computed, effect, inject, Injectable, signal } from '@angular/core';
 import { LocalDb } from '../../../core/database';
 import { TeamRecord } from '../../../core/database/local-db.records';
-import { Pokemon, TeamSlot } from '../../../core/models';
+import { Move, Pokemon, TeamSlot } from '../../../core/models';
+import { MAX_MOVES_PER_POKEMON } from '../utils/move-selection';
 
 export const TEAM_SIZE = 6;
 export const DEFAULT_TEAM_ID = 'default';
@@ -18,6 +19,14 @@ export function createEmptyTeamSlots(size: number = TEAM_SIZE): TeamSlots {
 export type AddPokemonResult =
   | { ok: true; index: number }
   | { ok: false; reason: 'full' | 'duplicate' | 'invalid'; message: string };
+
+export type SetMovesResult =
+  | { ok: true }
+  | {
+      ok: false;
+      reason: 'invalid' | 'too-many' | 'duplicate';
+      message: string;
+    };
 
 export function capitalizeName(name: string): string {
   return name.charAt(0).toUpperCase() + name.slice(1);
@@ -103,6 +112,40 @@ export class TeamStore {
 
   removeSlot(index: number): boolean {
     return this.setSlot(index, null);
+  }
+
+  setMoves(index: number, moves: readonly Move[]): SetMovesResult {
+    if (!this.isValidIndex(index)) {
+      return { ok: false, reason: 'invalid', message: 'Invalid team slot' };
+    }
+
+    const slot = this._slots()[index];
+
+    if (!slot) {
+      return { ok: false, reason: 'invalid', message: 'This slot is empty' };
+    }
+
+    if (moves.length > MAX_MOVES_PER_POKEMON) {
+      return {
+        ok: false,
+        reason: 'too-many',
+        message: `A Pokémon can know at most ${MAX_MOVES_PER_POKEMON} moves`,
+      };
+    }
+
+    const names = moves.map((move) => move.name.trim().toLowerCase());
+
+    if (new Set(names).size !== names.length) {
+      return {
+        ok: false,
+        reason: 'duplicate',
+        message: 'A Pokémon cannot know the same move twice',
+      };
+    }
+
+    this.setSlot(index, { ...slot, moves: [...moves] });
+
+    return { ok: true };
   }
 
   swapSlots(from: number, to: number): boolean {

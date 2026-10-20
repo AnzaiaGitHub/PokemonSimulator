@@ -10,6 +10,8 @@ data is cached in IndexedDB so the Pokédex keeps working without a connection.
 - Cache-first repository with TTL and stale-while-revalidate.
 - HTTP queue with configurable concurrency, deduplication and exponential backoff for `429`/`5xx`.
 - Offline indicator and local sprite blobs.
+- Move editor for every team slot: learnset loaded on demand, search and filters by type and class,
+  max 4 moves with duplicate validation, attack-move warnings and default attack moves.
 - Settings page to inspect storage usage, request persistent storage and clear cached data while
   keeping teams and trainers.
 
@@ -49,6 +51,11 @@ follows this policy:
 The 18 types, sprites and the Pokémon index are also stored locally. The schema is versioned, and
 upgrades preserve teams and trainers.
 
+Move details are downloaded only when the move selector opens for a team slot. They are stored in
+the `moves` store, reused offline and requested through the same concurrency-limited HTTP queue. A
+Pokémon's learnset comes from its cached detail, so the selector never needs the API to know which
+moves are available. Selected moves are saved with the team slot and restored on reload.
+
 ## Code quality
 
 ```bash
@@ -65,4 +72,4 @@ npm test
 ```
 
 They cover mappers, the HTTP queue, cache hit/miss, TTL/revalidation, offline errors, schema
-migrations, the Pokédex store and the main views.
+migrations, the Pokédex store, move loading/validators and the main views.

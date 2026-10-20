@@ -13,7 +13,15 @@ import { RouterLink } from '@angular/router';
 import { Pokemon, TeamSlot } from '../../../../core/models';
 import { PokemonTypeBadge } from '../../../../shared/ui/pokemon-type-badge/pokemon-type-badge';
 import { SpriteService } from '../../../pokedex/data-access/sprite';
-import { POKEMON_PLACEHOLDER_SPRITE, pokemonArtworkUrl } from '../../../pokedex/utils/pokemon-display';
+import {
+  POKEMON_PLACEHOLDER_SPRITE,
+  pokemonArtworkUrl,
+} from '../../../pokedex/utils/pokemon-display';
+import {
+  formatMoveName,
+  hasAttackingMove,
+  MAX_MOVES_PER_POKEMON,
+} from '../../utils/move-selection';
 
 @Component({
   selector: 'app-team-slot-card',
@@ -34,6 +42,7 @@ export class TeamSlotCard {
   readonly remove = output<number>();
   readonly moveUp = output<number>();
   readonly moveDown = output<number>();
+  readonly editMoves = output<number>();
 
   private readonly loaded = signal<{ readonly id: number; readonly url: string } | null>(null);
   private readonly failedId = signal<number | null>(null);
@@ -41,7 +50,14 @@ export class TeamSlotCard {
 
   protected readonly name = computed(() => this.slot()?.pokemon.name ?? `Slot ${this.index() + 1}`);
   protected readonly types = computed(() => this.slot()?.pokemon.types ?? []);
-  protected readonly moveCount = computed(() => this.slot()?.moves.length ?? 0);
+  protected readonly moves = computed(() => this.slot()?.moves ?? []);
+  protected readonly moveCount = computed(() => this.moves().length);
+  protected readonly hasAttackMove = computed(() => hasAttackingMove(this.moves()));
+  protected readonly maxMoves = MAX_MOVES_PER_POKEMON;
+  protected readonly moveSlots = Array.from(
+    { length: MAX_MOVES_PER_POKEMON },
+    (_value, index) => index,
+  );
 
   protected readonly imageSrc = computed(() => {
     const slot = this.slot();
@@ -96,6 +112,14 @@ export class TeamSlotCard {
 
   protected onMoveDown(): void {
     this.moveDown.emit(this.index());
+  }
+
+  protected onEditMoves(): void {
+    this.editMoves.emit(this.index());
+  }
+
+  protected formatName(name: string): string {
+    return formatMoveName(name);
   }
 
   private async loadSprite(pokemon: Pokemon): Promise<void> {

@@ -31,8 +31,8 @@ export class FakePokedexRepository implements PokedexRepository {
     return of({ data: pokemon, source: 'cache' });
   }
 
-  getMove(): Observable<DataResult<Move>> {
-    return throwError(() => new NotFoundError('Move not found'));
+  getMove(name: string): Observable<DataResult<Move>> {
+    return throwError(() => new NotFoundError(`Move not found: ${name}`));
   }
 
   getType(name: string): Observable<DataResult<PokemonType>> {

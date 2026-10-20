@@ -198,25 +198,25 @@ Sin esto, las imágenes no se verían sin conexión.
 ## E4 — Movimientos de cada Pokémon (Req. 3)
 
 ### US-040 🔴 Learnset del Pokémon (3 pts)
-- [ ] Se obtiene la lista de movimientos aprendibles desde el detalle guardado.
-- [ ] Los detalles de cada movimiento se piden **bajo demanda** (al abrir el selector) y se guardan en `moves`.
-- [ ] Se limita la concurrencia para no saturar la API (usa la cola de US-011).
+- [x] Se obtiene la lista de movimientos aprendibles desde el detalle guardado.
+- [x] Los detalles de cada movimiento se piden **bajo demanda** (al abrir el selector) y se guardan en `moves`.
+- [x] Se limita la concurrencia para no saturar la API (usa la cola de US-011).
 
 ### US-041 🔴 Selector de movimientos (5 pts)
-- [ ] Cada slot muestra sus 4 movimientos; se puede cambiar cualquiera.
-- [ ] Modal/panel con búsqueda por nombre y filtros por tipo y clase (física, especial, estado).
-- [ ] Cada opción muestra tipo, poder, precisión y PP.
-- [ ] Usa formulario reactivo.
+- [x] Cada slot muestra sus 4 movimientos; se puede cambiar cualquiera.
+- [x] Modal/panel con búsqueda por nombre y filtros por tipo y clase (física, especial, estado).
+- [x] Cada opción muestra tipo, poder, precisión y PP.
+- [x] Usa formulario reactivo.
 
 ### US-042 🔴 Validaciones de movimientos (2 pts)
-- [ ] Máximo 4, sin repetidos (validador personalizado).
-- [ ] Mínimo 1 movimiento de ataque para poder usar al Pokémon en batalla (aviso, no bloqueo en el equipo).
+- [x] Máximo 4, sin repetidos (validador personalizado).
+- [x] Mínimo 1 movimiento de ataque para poder usar al Pokémon en batalla (aviso, no bloqueo en el equipo).
 
 ### US-043 🔴 Persistencia de movimientos (2 pts)
-- [ ] La selección se guarda con el slot y se restaura al recargar.
+- [x] La selección se guarda con el slot y se restaura al recargar.
 
 ### US-044 🟡 Movimientos por defecto (2 pts)
-- [ ] Al añadir un Pokémon se asignan 4 movimientos de ataque por defecto (criterio: mayor poder entre los aprendibles; si los detalles no están descargados, se asignan al abrir el selector).
+- [x] Al añadir un Pokémon se asignan 4 movimientos de ataque por defecto (criterio: mayor poder entre los aprendibles; si los detalles no están descargados, se asignan al abrir el selector).
 
 ---
 
