@@ -22,16 +22,19 @@ const TYPE_COLORS: Readonly<Record<PokemonTypeName, string>> = {
   fairy: 'bg-rose-400/15 text-rose-300 ring-rose-400/30',
 };
 
+const SIZE_CLASSES = {
+  md: 'px-3 py-1 text-xs',
+  sm: 'px-2.5 py-0.5 text-[11px]',
+  xs: 'px-2 py-0.5 text-[10px]',
+} as const;
+
+export type PokemonTypeBadgeSize = keyof typeof SIZE_CLASSES;
+
 @Component({
   selector: 'app-pokemon-type-badge',
   imports: [],
   template: `
-    <span
-      [class]="
-        'inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold capitalize ring-1 ring-inset ' +
-        colorClass()
-      "
-    >
+    <span [class]="classes()">
       {{ type() }}
     </span>
   `,
@@ -39,6 +42,10 @@ const TYPE_COLORS: Readonly<Record<PokemonTypeName, string>> = {
 })
 export class PokemonTypeBadge {
   readonly type = input.required<PokemonTypeName>();
+  readonly size = input<PokemonTypeBadgeSize>('md');
 
-  protected readonly colorClass = computed(() => TYPE_COLORS[this.type()]);
+  protected readonly classes = computed(
+    () =>
+      `inline-flex items-center rounded-full font-semibold capitalize ring-1 ring-inset ${SIZE_CLASSES[this.size()]} ${TYPE_COLORS[this.type()]}`,
+  );
 }

@@ -2,7 +2,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import { signal } from '@angular/core';
 import { CdkDragDrop } from '@angular/cdk/drag-drop';
-import { TeamStore, TEAM_SIZE } from '../../stores/team.store';
+import { TeamStore, TEAM_SIZE, TeamSlots } from '../../stores/team.store';
 import { TeamSummaryStore } from '../../stores/team-summary/team-summary.store';
 import { TeamManagement } from './team-management';
 
@@ -69,7 +69,7 @@ describe('TeamManagement', () => {
 
   it('calls swapSlots on drop', () => {
     const component = fixture.componentInstance;
-    const event = { previousIndex: 0, currentIndex: 1 } as CdkDragDrop<readonly (number | null)[]>;
+    const event = { previousIndex: 0, currentIndex: 1 } as CdkDragDrop<TeamSlots>;
 
     component.drop(event);
 

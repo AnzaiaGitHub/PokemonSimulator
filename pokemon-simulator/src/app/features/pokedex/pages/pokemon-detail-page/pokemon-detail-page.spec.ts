@@ -24,6 +24,7 @@ describe('PokemonDetailPage', () => {
           provide: TeamStore,
           useValue: {
             isFull: () => false,
+            isReady: () => true,
             hasPokemon: () => false,
             addPokemon: () => ({ ok: true, index: 0 }),
             status: () => 'ready',

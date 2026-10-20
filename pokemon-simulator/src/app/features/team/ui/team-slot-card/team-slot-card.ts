@@ -9,18 +9,15 @@ import {
   output,
   signal,
 } from '@angular/core';
+import { RouterLink } from '@angular/router';
 import { Pokemon, TeamSlot } from '../../../../core/models';
 import { PokemonTypeBadge } from '../../../../shared/ui/pokemon-type-badge/pokemon-type-badge';
 import { SpriteService } from '../../../pokedex/data-access/sprite';
-import {
-  formatPokemonId,
-  POKEMON_PLACEHOLDER_SPRITE,
-  pokemonArtworkUrl,
-} from '../../../pokedex/utils/pokemon-display';
+import { POKEMON_PLACEHOLDER_SPRITE, pokemonArtworkUrl } from '../../../pokedex/utils/pokemon-display';
 
 @Component({
   selector: 'app-team-slot-card',
-  imports: [PokemonTypeBadge],
+  imports: [RouterLink, PokemonTypeBadge],
   templateUrl: './team-slot-card.html',
   styleUrl: './team-slot-card.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -42,7 +39,6 @@ export class TeamSlotCard {
   private readonly failedId = signal<number | null>(null);
   private currentId: number | null = null;
 
-  protected readonly displayId = computed(() => formatPokemonId(this.slot()?.pokemon.id ?? 0));
   protected readonly name = computed(() => this.slot()?.pokemon.name ?? `Slot ${this.index() + 1}`);
   protected readonly types = computed(() => this.slot()?.pokemon.types ?? []);
   protected readonly moveCount = computed(() => this.slot()?.moves.length ?? 0);
@@ -68,14 +64,12 @@ export class TeamSlotCard {
     effect(() => {
       const slot = this.slot();
 
-      if (this.currentId !== null && (!slot || this.currentId !== slot.pokemon.id)) {
-        this.sprites.release(this.currentId);
+      if (!slot || this.currentId === slot.pokemon.id) {
+        return;
       }
 
-      if (slot) {
-        this.currentId = slot.pokemon.id;
-        void this.loadSprite(slot.pokemon);
-      }
+      this.currentId = slot.pokemon.id;
+      void this.loadSprite(slot.pokemon);
     });
 
     this.destroyRef.onDestroy(() => {

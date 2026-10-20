@@ -1,7 +1,7 @@
 import { computed, inject, Injectable, signal } from '@angular/core';
 import { POKEMON_TYPE_NAMES, PokemonType, PokemonTypeName } from '../../../../core/models';
 import { PokemonTypeCache } from '../../../pokedex/data-access/pokemon-type-cache';
-import { TeamStore } from '../team.store';
+import { TeamSlots, TeamStore } from '../team.store';
 
 export interface TypeEffectiveness {
   readonly type: PokemonTypeName;
@@ -40,6 +40,69 @@ function calculateTypeMultiplier(
   return multiplier;
 }
 
+export function computeTeamTypeSummary(
+  slots: TeamSlots,
+  typeMap: ReadonlyMap<PokemonTypeName, PokemonType>,
+): TeamTypeSummary {
+  const presentTypeSet = new Set<PokemonTypeName>();
+  for (const slot of slots) {
+    if (slot) {
+      for (const type of slot.pokemon.types) {
+        presentTypeSet.add(type);
+      }
+    }
+  }
+  const presentTypes = [...presentTypeSet].sort();
+
+  const hasPokemon = slots.some((slot) => slot !== null);
+  if (typeMap.size === 0 || !hasPokemon) {
+    return { presentTypes, weaknesses: [], resistances: [], immunities: [] };
+  }
+
+  const weaknesses: TypeEffectiveness[] = [];
+  const resistances: TypeEffectiveness[] = [];
+  const immunities: PokemonTypeName[] = [];
+
+  for (const attackingType of POKEMON_TYPE_NAMES) {
+    let maxMultiplier = 1;
+    let minMultiplier = 1;
+    let hasNonImmuneMatchup = false;
+    let hasImmuneMatchup = false;
+
+    for (const slot of slots) {
+      if (!slot) continue;
+
+      const multiplier = calculateTypeMultiplier(attackingType, slot.pokemon.types, typeMap);
+
+      if (multiplier === 0) {
+        hasImmuneMatchup = true;
+        continue;
+      }
+
+      hasNonImmuneMatchup = true;
+      maxMultiplier = Math.max(maxMultiplier, multiplier);
+      minMultiplier = Math.min(minMultiplier, multiplier);
+    }
+
+    if (hasNonImmuneMatchup && maxMultiplier > 1) {
+      weaknesses.push({ type: attackingType, multiplier: maxMultiplier });
+    }
+    if (hasNonImmuneMatchup && minMultiplier < 1) {
+      resistances.push({ type: attackingType, multiplier: minMultiplier });
+    }
+    if (hasImmuneMatchup && !hasNonImmuneMatchup) {
+      immunities.push(attackingType);
+    }
+  }
+
+  return {
+    presentTypes,
+    weaknesses: weaknesses.sort((a, b) => b.multiplier - a.multiplier),
+    resistances: resistances.sort((a, b) => a.multiplier - b.multiplier),
+    immunities: immunities.sort(),
+  };
+}
+
 @Injectable({
   providedIn: 'root',
 })
@@ -62,56 +125,9 @@ export class TeamSummaryStore {
     return [...types].sort();
   });
 
-  readonly summary = computed((): TeamTypeSummary => {
-    const typeMap = this.typeCache.types();
-    const slots = this.teamStore.slots();
-
-    if (typeMap.size === 0 || slots.every((s) => s === null)) {
-      return {
-        presentTypes: this.presentTypes(),
-        weaknesses: [],
-        resistances: [],
-        immunities: [],
-      };
-    }
-
-    const weaknesses: TypeEffectiveness[] = [];
-    const resistances: TypeEffectiveness[] = [];
-    const immunities: PokemonTypeName[] = [];
-
-    for (const attackingType of POKEMON_TYPE_NAMES) {
-      let maxMultiplier = 1;
-      let hasImmunity = false;
-
-      for (const slot of slots) {
-        if (!slot) continue;
-
-        const multiplier = calculateTypeMultiplier(attackingType, slot.pokemon.types, typeMap);
-        if (multiplier === 0) {
-          hasImmunity = true;
-          break;
-        }
-        if (multiplier > maxMultiplier) {
-          maxMultiplier = multiplier;
-        }
-      }
-
-      if (hasImmunity) {
-        immunities.push(attackingType);
-      } else if (maxMultiplier > 1) {
-        weaknesses.push({ type: attackingType, multiplier: maxMultiplier });
-      } else if (maxMultiplier < 1) {
-        resistances.push({ type: attackingType, multiplier: maxMultiplier });
-      }
-    }
-
-    return {
-      presentTypes: this.presentTypes(),
-      weaknesses: weaknesses.sort((a, b) => b.multiplier - a.multiplier),
-      resistances: resistances.sort((a, b) => a.multiplier - b.multiplier),
-      immunities,
-    };
-  });
+  readonly summary = computed((): TeamTypeSummary =>
+    computeTeamTypeSummary(this.teamStore.slots(), this.typeCache.types()),
+  );
 
   async load(): Promise<void> {
     if (this._status() === 'ready' || this._status() === 'loading') {

@@ -1,12 +1,7 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  effect,
-  inject,
-  signal,
-} from '@angular/core';
-import { CdkDragDrop, DragDropModule, moveItemInArray } from '@angular/cdk/drag-drop';
-import { TeamStore, TEAM_SIZE } from '../../stores/team.store';
+import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
+import { CdkDragDrop, DragDropModule } from '@angular/cdk/drag-drop';
+import { RouterLink } from '@angular/router';
+import { TeamStore, TEAM_SIZE, TeamSlots } from '../../stores/team.store';
 import { TeamSlotCard } from '../../ui/team-slot-card/team-slot-card';
 import { TeamSummary } from '../../ui/team-summary/team-summary';
 import { TeamSummaryStore } from '../../stores/team-summary/team-summary.store';
@@ -14,7 +9,7 @@ import { AsyncState } from '../../../../shared/ui/async-state/async-state';
 
 @Component({
   selector: 'app-team-management',
-  imports: [DragDropModule, TeamSlotCard, TeamSummary, AsyncState],
+  imports: [DragDropModule, RouterLink, TeamSlotCard, TeamSummary, AsyncState],
   templateUrl: './team-management.html',
   styleUrl: './team-management.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -22,10 +17,6 @@ import { AsyncState } from '../../../../shared/ui/async-state/async-state';
 export class TeamManagement {
   private readonly teamStore = inject(TeamStore);
   private readonly summaryStore = inject(TeamSummaryStore);
-
-  readonly localSlots = signal<readonly (number | null)[]>(
-    Array.from({ length: TEAM_SIZE }, (_, i) => i),
-  );
 
   readonly slots = this.teamStore.slots;
   readonly occupiedCount = this.teamStore.occupiedCount;
@@ -38,42 +29,27 @@ export class TeamManagement {
 
   constructor() {
     this.teamStore.load();
-    effect(() => {
-      this.summaryStore.load();
-    });
+    this.summaryStore.load();
   }
 
-  drop(event: CdkDragDrop<readonly (number | null)[]>): void {
-    const previousIndex = event.previousIndex;
-    const currentIndex = event.currentIndex;
-
-    if (previousIndex === currentIndex) return;
-
-    this.teamStore.swapSlots(previousIndex, currentIndex);
-    moveItemInArray(this.localSlots() as unknown as (number | null)[], previousIndex, currentIndex);
-    this.localSlots.set([...this.localSlots()]);
+  drop(event: CdkDragDrop<TeamSlots>): void {
+    this.teamStore.swapSlots(event.previousIndex, event.currentIndex);
   }
 
   moveUp(index: number): void {
-    if (index > 0) {
-      this.teamStore.swapSlots(index, index - 1);
-      const arr = [...this.localSlots()];
-      moveItemInArray(arr, index, index - 1);
-      this.localSlots.set(arr);
-    }
+    this.teamStore.swapSlots(index, index - 1);
   }
 
   moveDown(index: number): void {
-    if (index < TEAM_SIZE - 1) {
-      this.teamStore.swapSlots(index, index + 1);
-      const arr = [...this.localSlots()];
-      moveItemInArray(arr, index, index + 1);
-      this.localSlots.set(arr);
-    }
+    this.teamStore.swapSlots(index, index + 1);
   }
 
   remove(index: number): void {
     this.teamStore.removePokemon(index);
+  }
+
+  trackSlot(index: number, slot: TeamSlots[number]): string | number {
+    return slot?.pokemon.id ?? `empty-${index}`;
   }
 
   canMoveUp(index: number): boolean {

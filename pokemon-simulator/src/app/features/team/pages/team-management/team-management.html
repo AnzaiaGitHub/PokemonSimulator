@@ -32,10 +32,10 @@
     <div
       cdkDropList
       class="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3"
-      [cdkDropListData]="localSlots()"
+      [cdkDropListData]="slots()"
       (cdkDropListDropped)="drop($event)"
     >
-      @for (slot of slots(); track $index; let i = $index) {
+      @for (slot of slots(); track trackSlot($index, slot); let i = $index) {
         <app-team-slot-card
           cdkDrag
           [slot]="slot"

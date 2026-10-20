@@ -13,6 +13,7 @@ describe('PokemonCard', () => {
   };
   const teamStore = {
     isFull: vi.fn(() => false),
+    isReady: vi.fn(() => true),
     hasPokemon: vi.fn(() => false),
     addPokemon: vi.fn(() => ({ ok: true, index: 0 })),
     status: vi.fn(() => 'ready'),

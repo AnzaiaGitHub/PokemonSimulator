@@ -19,6 +19,10 @@ export type AddPokemonResult =
   | { ok: true; index: number }
   | { ok: false; reason: 'full' | 'duplicate' | 'invalid'; message: string };
 
+export function capitalizeName(name: string): string {
+  return name.charAt(0).toUpperCase() + name.slice(1);
+}
+
 @Injectable({
   providedIn: 'root',
 })
@@ -61,7 +65,11 @@ export class TeamStore {
       return { ok: false, reason: 'full', message: 'Team is full (6/6)' };
     }
     if (!ALLOW_DUPLICATE_POKEMON && this.hasPokemon(pokemon.name)) {
-      return { ok: false, reason: 'duplicate', message: `${pokemon.name.capitalize()} is already in the team` };
+      return {
+        ok: false,
+        reason: 'duplicate',
+        message: `${capitalizeName(pokemon.name)} is already in the team`,
+      };
     }
 
     const index = this.firstFreeSlotIndex();
@@ -165,13 +173,3 @@ export class TeamStore {
     return Number.isInteger(index) && index >= 0 && index < this.teamSize;
   }
 }
-
-declare global {
-  interface String {
-    capitalize(): string;
-  }
-}
-
-String.prototype.capitalize = function (): string {
-  return this.charAt(0).toUpperCase() + this.slice(1);
-};

@@ -9,7 +9,7 @@ import {
 } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
 import { Pokemon } from '../../../../core/models';
-import { TeamStore } from '../../stores/team.store';
+import { capitalizeName, TeamStore } from '../../stores/team.store';
 import { POKEDEX_REPOSITORY } from '../../../pokedex/data-access/pokedex.repository';
 
 @Component({
@@ -36,11 +36,15 @@ export class AddToTeamButton {
 
   readonly isInTeam = computed(() => this.teamStore.hasPokemon(this.name()));
   readonly isFull = this.teamStore.isFull;
-  readonly canAdd = computed(() => !this._loading() && !this.isFull() && !this.isInTeam());
+  readonly isTeamReady = this.teamStore.isReady;
+  readonly canAdd = computed(
+    () => this.isTeamReady() && !this._loading() && !this.isFull() && !this.isInTeam(),
+  );
 
   readonly disabledReason = computed(() => {
+    if (!this.isTeamReady()) return 'Loading your team…';
     if (this._loading()) return 'Adding…';
-    if (this.isFull()) return 'Team is full (6/6)';
+    if (this.isFull()) return 'Team is full (6/6). Remove a Pokémon to add another.';
     if (this.isInTeam()) return 'Already in team';
     return null;
   });
@@ -65,7 +69,9 @@ export class AddToTeamButton {
       const result = this.teamStore.addPokemon(pokemon);
 
       if (result.ok) {
-        this._message.set(`${pokemon.name.capitalize()} added to slot ${result.index + 1}`);
+        this._message.set(
+          `${capitalizeName(pokemon.name)} added to slot ${result.index + 1}`,
+        );
         this._messageType.set('success');
       } else {
         this._message.set(result.message);
@@ -84,13 +90,3 @@ export class AddToTeamButton {
     return data;
   }
 }
-
-declare global {
-  interface String {
-    capitalize(): string;
-  }
-}
-
-String.prototype.capitalize = function (): string {
-  return this.charAt(0).toUpperCase() + this.slice(1);
-};
