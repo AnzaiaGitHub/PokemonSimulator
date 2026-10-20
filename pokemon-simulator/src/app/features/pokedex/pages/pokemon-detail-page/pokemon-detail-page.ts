@@ -13,6 +13,7 @@ import { Pokemon } from '../../../../core/models';
 import { PokemonTypeBadge } from '../../../../shared/ui/pokemon-type-badge/pokemon-type-badge';
 import { SpriteService } from '../../data-access/sprite';
 import { PokemonStatsComponent } from '../../ui/pokemon-stats/pokemon-stats';
+import { AddToTeamButton } from '../../../team/ui/add-to-team-button/add-to-team-button';
 import {
   formatPokemonId,
   POKEMON_PLACEHOLDER_SPRITE,
@@ -21,7 +22,7 @@ import {
 
 @Component({
   selector: 'app-pokemon-detail-page',
-  imports: [RouterLink, PokemonTypeBadge, PokemonStatsComponent],
+  imports: [RouterLink, PokemonTypeBadge, PokemonStatsComponent, AddToTeamButton],
   templateUrl: './pokemon-detail-page.html',
   styleUrl: './pokemon-detail-page.css',
   changeDetection: ChangeDetectionStrategy.OnPush,

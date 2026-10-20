@@ -11,6 +11,7 @@ import {
 import { RouterLink } from '@angular/router';
 import { PokemonIndexEntry } from '../../../../core/models';
 import { SpriteService } from '../../data-access/sprite';
+import { AddToTeamButton } from '../../../team/ui/add-to-team-button/add-to-team-button';
 import {
   formatPokemonId,
   POKEMON_PLACEHOLDER_SPRITE,
@@ -19,7 +20,7 @@ import {
 
 @Component({
   selector: 'app-pokemon-card',
-  imports: [RouterLink],
+  imports: [RouterLink, AddToTeamButton],
   templateUrl: './pokemon-card.html',
   styleUrl: './pokemon-card.css',
   changeDetection: ChangeDetectionStrategy.OnPush,

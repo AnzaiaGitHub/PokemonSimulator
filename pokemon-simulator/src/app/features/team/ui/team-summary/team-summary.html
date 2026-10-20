@@ -1,0 +1,149 @@
+@if (status() === 'loading') {
+  <div class="flex items-center justify-center gap-2 text-sm text-slate-400">
+    <svg class="h-4 w-4 animate-spin" viewBox="0 0 24 24" aria-hidden="true">
+      <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" fill="none" />
+      <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+    </svg>
+    Loading team analysis…
+  </div>
+} @else if (status() === 'error') {
+  <div class="rounded-xl border border-red-500/30 bg-red-500/5 p-4 text-center text-red-200">
+    Failed to load type data. Team analysis unavailable.
+  </div>
+} @else {
+  <section class="space-y-6">
+    <div>
+      <h3 class="text-sm font-semibold uppercase tracking-[0.3em] text-slate-400">Present Types</h3>
+      <div class="mt-2 flex flex-wrap gap-2">
+        @for (type of summary().presentTypes; track type) {
+          <app-pokemon-type-badge [type]="type" />
+        }
+        @if (summary().presentTypes.length === 0) {
+          <span class="text-sm text-slate-500">No Pokémon in team</span>
+        }
+      </div>
+    </div>
+
+    <div class="rounded-xl border border-slate-800 bg-slate-900/60 p-4">
+      <button
+        type="button"
+        (click)="toggleWeaknesses()"
+        class="flex w-full items-center justify-between text-left"
+        [attr.aria-expanded]="expandedWeaknesses()"
+        aria-controls="weaknesses-panel"
+      >
+        <span class="flex items-center gap-2 text-sm font-semibold text-red-300">
+          <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
+            <line x1="12" y1="9" x2="12" y2="13" />
+            <line x1="12" y1="17" x2="12.01" y2="17" />
+          </svg>
+          Weaknesses
+        </span>
+        <span class="flex items-center gap-2 text-xs font-medium text-slate-400">
+          <span class="rounded-full bg-red-500/20 px-2 py-0.5">{{ weaknessCount() }}</span>
+          <svg class="h-4 w-4 transition" [class.rotate-180]="expandedWeaknesses()" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <polyline points="6 9 12 15 18 9" />
+          </svg>
+        </span>
+      </button>
+
+      <div id="weaknesses-panel" class="mt-3" [class.hidden]="!expandedWeaknesses()">
+        @if (summary().weaknesses.length === 0) {
+          <p class="text-sm text-slate-500">No weaknesses</p>
+        } @else {
+          <div class="flex flex-wrap gap-2">
+            @for (w of summary().weaknesses; track w.type) {
+              <span
+                class="inline-flex items-center gap-1 rounded-full bg-red-500/10 px-3 py-1 text-xs font-medium"
+                [class.text-red-300]="w.multiplier > 1"
+              >
+                <app-pokemon-type-badge [type]="w.type" size="xs" />
+                <span [class]="getMultiplierColor(w.multiplier)">{{ getMultiplierLabel(w.multiplier) }}</span>
+              </span>
+            }
+          </div>
+        }
+      </div>
+    </div>
+
+    <div class="rounded-xl border border-slate-800 bg-slate-900/60 p-4">
+      <button
+        type="button"
+        (click)="toggleResistances()"
+        class="flex w-full items-center justify-between text-left"
+        [attr.aria-expanded]="expandedResistances()"
+        aria-controls="resistances-panel"
+      >
+        <span class="flex items-center gap-2 text-sm font-semibold text-green-300">
+          <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+          </svg>
+          Resistances
+        </span>
+        <span class="flex items-center gap-2 text-xs font-medium text-slate-400">
+          <span class="rounded-full bg-green-500/20 px-2 py-0.5">{{ resistanceCount() }}</span>
+          <svg class="h-4 w-4 transition" [class.rotate-180]="expandedResistances()" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <polyline points="6 9 12 15 18 9" />
+          </svg>
+        </span>
+      </button>
+
+      <div id="resistances-panel" class="mt-3" [class.hidden]="!expandedResistances()">
+        @if (summary().resistances.length === 0) {
+          <p class="text-sm text-slate-500">No resistances</p>
+        } @else {
+          <div class="flex flex-wrap gap-2">
+            @for (r of summary().resistances; track r.type) {
+              <span
+                class="inline-flex items-center gap-1 rounded-full bg-green-500/10 px-3 py-1 text-xs font-medium"
+                [class.text-green-300]="r.multiplier < 1"
+              >
+                <app-pokemon-type-badge [type]="r.type" size="xs" />
+                <span [class]="getMultiplierColor(r.multiplier)">{{ getMultiplierLabel(r.multiplier) }}</span>
+              </span>
+            }
+          </div>
+        }
+      </div>
+    </div>
+
+    @if (summary().immunities.length > 0) {
+      <div class="rounded-xl border border-slate-800 bg-slate-900/60 p-4">
+        <button
+          type="button"
+          (click)="toggleImmunities()"
+          class="flex w-full items-center justify-between text-left"
+          [attr.aria-expanded]="expandedImmunities()"
+          aria-controls="immunities-panel"
+        >
+          <span class="flex items-center gap-2 text-sm font-semibold text-sky-300">
+            <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+              <circle cx="12" cy="12" r="10" />
+              <line x1="12" y1="8" x2="12" y2="12" />
+              <line x1="12" y1="16" x2="12.01" y2="16" />
+            </svg>
+            Immunities
+          </span>
+          <span class="flex items-center gap-2 text-xs font-medium text-slate-400">
+            <span class="rounded-full bg-sky-500/20 px-2 py-0.5">{{ immunityCount() }}</span>
+            <svg class="h-4 w-4 transition" [class.rotate-180]="expandedImmunities()" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+              <polyline points="6 9 12 15 18 9" />
+            </svg>
+          </span>
+        </button>
+
+        <div id="immunities-panel" class="mt-3" [class.hidden]="!expandedImmunities()">
+          <div class="flex flex-wrap gap-2">
+            @for (type of summary().immunities; track type) {
+              <span class="inline-flex items-center gap-1 rounded-full bg-sky-500/10 px-3 py-1 text-xs font-medium text-sky-300">
+                <app-pokemon-type-badge [type]="type" size="xs" />
+                <span>0×</span>
+              </span>
+            }
+          </div>
+        </div>
+      </div>
+    }
+  </section>
+}

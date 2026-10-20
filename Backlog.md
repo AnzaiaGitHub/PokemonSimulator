@@ -167,31 +167,31 @@ Sin esto, las imágenes no se verían sin conexión.
 ## E3 — Equipo de 6 slots (Req. 2)
 
 ### US-030 🔴 Store del equipo (5 pts)
-- [ ] `TeamStore` con signals: 6 slots, cada uno `TeamSlot | null`.
-- [ ] `computed` para: slots libres, cantidad ocupada, equipo completo.
-- [ ] Estado expuesto como solo lectura; solo se modifica con métodos del store.
-- [ ] Tests de las reglas.
+- [x] `TeamStore` con signals: 6 slots, cada uno `TeamSlot | null`.
+- [x] `computed` para: slots libres, cantidad ocupada, equipo completo.
+- [x] Estado expuesto como solo lectura; solo se modifica con métodos del store.
+- [x] Tests de las reglas.
 
 ### US-031 🔴 Añadir y quitar Pokémon (3 pts)
-- [ ] Botón "Añadir al equipo" en lista y detalle; ocupa el primer slot libre.
-- [ ] Quitar desde la vista del equipo.
-- [ ] Si el equipo está completo, el botón queda deshabilitado con explicación.
+- [x] Botón "Añadir al equipo" en lista y detalle; ocupa el primer slot libre.
+- [x] Quitar desde la vista del equipo.
+- [x] Si el equipo está completo, el botón queda deshabilitado con explicación.
 
 ### US-032 🔴 Reglas del equipo (2 pts)
-- [ ] Máximo 6.
-- [ ] No se permiten repetidos (regla configurable en una constante).
-- [ ] Mensajes claros cuando una acción se rechaza.
+- [x] Máximo 6.
+- [x] No se permiten repetidos (regla configurable en una constante).
+- [x] Mensajes claros cuando una acción se rechaza.
 
 ### US-033 🟡 Reordenar slots (3 pts)
-- [ ] Intercambiar posiciones con arrastrar y soltar (Angular CDK) **y** con botones accesibles por teclado.
+- [x] Intercambiar posiciones con arrastrar y soltar (Angular CDK) **y** con botones accesibles por teclado.
 
 ### US-034 🔴 Persistencia del equipo (2 pts)
-- [ ] El equipo se guarda en IndexedDB en cada cambio (con `effect` o desde el store).
-- [ ] Al abrir la app se restaura, incluso sin conexión.
-- [ ] Si un dato del equipo no está en caché y no hay red, el slot se muestra con lo guardado y no se rompe.
+- [x] El equipo se guarda en IndexedDB en cada cambio (con `effect` o desde el store).
+- [x] Al abrir la app se restaura, incluso sin conexión.
+- [x] Si un dato del equipo no está en caché y no hay red, el slot se muestra con lo guardado y no se rompe.
 
 ### US-035 🟡 Resumen del equipo (3 pts)
-- [ ] Vista con tipos presentes, debilidades y resistencias del equipo (`computed`).
+- [x] Vista con tipos presentes, debilidades y resistencias del equipo (`computed`).
 
 ---
 

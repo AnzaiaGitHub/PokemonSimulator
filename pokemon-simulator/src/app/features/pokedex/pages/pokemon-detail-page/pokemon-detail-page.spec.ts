@@ -2,6 +2,8 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import { POKEDEX_FIXTURES } from '../../data-access/mock/pokedex-fixtures';
 import { SpriteService } from '../../data-access/sprite';
+import { TeamStore } from '../../../team/stores/team.store';
+import { POKEDEX_REPOSITORY } from '../../data-access/pokedex.repository';
 import { PokemonDetailPage } from './pokemon-detail-page';
 
 const PIKACHU = POKEDEX_FIXTURES[12];
@@ -17,6 +19,19 @@ describe('PokemonDetailPage', () => {
         {
           provide: SpriteService,
           useValue: { load: () => Promise.resolve('blob:sprite'), release: () => undefined },
+        },
+        {
+          provide: TeamStore,
+          useValue: {
+            isFull: () => false,
+            hasPokemon: () => false,
+            addPokemon: () => ({ ok: true, index: 0 }),
+            status: () => 'ready',
+          },
+        },
+        {
+          provide: POKEDEX_REPOSITORY,
+          useValue: { getPokemon: () => ({ pipe: () => ({ subscribe: () => {} }) }) },
         },
       ],
     }).compileComponents();
@@ -40,5 +55,12 @@ describe('PokemonDetailPage', () => {
     const link = fixture.nativeElement.querySelector('a') as HTMLAnchorElement;
 
     expect(link.getAttribute('href')).toBe('/pokedex');
+  });
+
+  it('renders the add to team button', () => {
+    const compiled = fixture.nativeElement as HTMLElement;
+    const button = compiled.querySelector('app-add-to-team-button');
+
+    expect(button).not.toBeNull();
   });
 });
